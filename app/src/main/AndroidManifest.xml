@@ -18,7 +18,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.ListActivity"></activity>
+        <activity android:name=".activity.ListActivity" />
+
+        <service
+            android:name=".service.AudioPlayService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".activity.PlayerActivity"></activity>
     </application>
 
 </manifest>
