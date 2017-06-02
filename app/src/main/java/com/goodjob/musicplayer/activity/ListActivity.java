@@ -14,6 +14,7 @@ import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.adapter.AudioListAdapter;
 import com.goodjob.musicplayer.entity.Audio;
 import com.goodjob.musicplayer.service.AudioPlayService;
+import com.goodjob.musicplayer.util.AudioList;
 import com.goodjob.musicplayer.util.MediaUtils;
 
 import java.util.ArrayList;
@@ -26,15 +27,7 @@ public class ListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
-        List<Audio> audioList = new ArrayList<>();
-        for (Audio audio : MediaUtils.getAudioList(this)) {
-            if (!audio.isMusic())
-            Log.d("musiclist", "title: " + audio.getTitle() + ", isMusic: " + audio.isMusic()
-                    + ", isAlarm: " + audio.isAlarm() + ", isNotification: " + audio.isNotification() + ", isRingtone: " + audio.isRingtone());
-            if (audio.isMusic() && audio.getDuration() > 40 * 1000) {
-                audioList.add(audio);
-            }
-        }
+        List<Audio> audioList = AudioList.getAudioList(this);
 
         final ListView listView = (ListView) findViewById(R.id.list_view);
         ArrayAdapter adapter = new AudioListAdapter(this, R.layout.list_music, audioList);
@@ -42,9 +35,8 @@ public class ListActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Audio audio = (Audio) listView.getAdapter().getItem(position);
                 Intent intent = new Intent(ListActivity.this, PlayerActivity.class);
-                intent.putExtra("audio", audio);
+                intent.putExtra("audioPosition", position);
                 startActivity(intent);
             }
         });
