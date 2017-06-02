@@ -3,11 +3,13 @@ package com.goodjob.musicplayer.entity;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
+import java.io.Serializable;
+
 /**
  * Created by Godot on 2017/6/1.
  */
 
-public class Audio {
+public class Audio implements Serializable {
     private String mTitle;
     private String mTitleKey;
     private String mArtist;
