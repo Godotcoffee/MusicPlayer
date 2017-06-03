@@ -133,7 +133,7 @@ public class Audio implements Serializable {
         return mArtistId;
     }
 
-    public int getlbumId() {
+    public int getAlbumId() {
         return mAlbumId;
     }
 

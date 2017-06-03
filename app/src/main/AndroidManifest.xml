@@ -22,10 +22,10 @@
 
         <service
             android:name=".service.AudioPlayService"
-            android:enabled="true"
-            android:exported="true" />
+            android:enabled="true" />
 
-        <activity android:name=".activity.PlayerActivity"></activity>
+        <activity android:name=".activity.PlayerActivity"
+            android:launchMode="singleTask" />
     </application>
 
 </manifest>

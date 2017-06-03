@@ -1,6 +1,7 @@
 package com.goodjob.musicplayer.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,10 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.entity.Audio;
+import com.goodjob.musicplayer.util.MediaUtils;
 
 import java.util.List;
 
@@ -40,11 +43,18 @@ public class AudioListAdapter extends ArrayAdapter<Audio> {
         TextView title = (TextView) convertView.findViewById(R.id.title);
         TextView artist = (TextView) convertView.findViewById(R.id.artist);
         TextView duration = (TextView) convertView.findViewById(R.id.duration);
+        ImageView album = (ImageView) convertView.findViewById(R.id.album);
 
         Audio audio = getItem(position);
 
         title.setText(audio.getTitle());
         artist.setText(audio.getArtist());
+        BitmapDrawable drawable = MediaUtils.getAlbumBitmapDrawable(mContext, audio);
+        if (drawable != null) {
+            album.setImageDrawable(drawable);
+        } else {
+            album.setImageResource(R.drawable.no_album);
+        }
 
         int totalSecond = audio.getDuration() / 1000;
         int minute = totalSecond / 60;

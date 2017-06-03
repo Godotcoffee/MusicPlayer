@@ -22,10 +22,10 @@ public class AudioList {
                 if (mAudioList == null) {
                     mAudioList = new ArrayList<>();
                     for (Audio audio : MediaUtils.getAudioList(context)) {
-                        if (!audio.isMusic()) {
-                            //Log.d("musiclist", "title: " + audio.getTitle() + ", isMusic: " + audio.isMusic()
-                            //        + ", isAlarm: " + audio.isAlarm() + ", isNotification: " + audio.isNotification() + ", isRingtone: " + audio.isRingtone());
-                        }
+                        /*if (!audio.isMusic()) {
+                            Log.d("musiclist", "title: " + audio.getTitle() + ", isMusic: " + audio.isMusic()
+                                    + ", isAlarm: " + audio.isAlarm() + ", isNotification: " + audio.isNotification() + ", isRingtone: " + audio.isRingtone());
+                        }*/
                         if (audio.isMusic() && audio.getDuration() > 40 * 1000) {
                             mAudioList.add(audio);
                         }

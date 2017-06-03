@@ -3,6 +3,9 @@ package com.goodjob.musicplayer.util;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
@@ -25,15 +28,15 @@ public class MediaUtils {
         Cursor cursor = contentResolver.query(MediaStore.Audio.Media.INTERNAL_CONTENT_URI, null, null, null, null);
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             Bundle bundle = new Bundle();
-            for (String column : cursor.getColumnNames()) {
-                int colIdx = cursor.getColumnIndex(column);
-                int type = cursor.getType(colIdx);
+            for (int i = 0; i < cursor.getColumnCount(); ++i) {
+                int type = cursor.getType(i);
+                String colName = cursor.getColumnName(i);
                 switch (type) {
                     case Cursor.FIELD_TYPE_INTEGER:
-                        bundle.putInt(column, cursor.getInt(colIdx));
+                        bundle.putInt(colName, cursor.getInt(i));
                         break;
                     case Cursor.FIELD_TYPE_STRING:
-                        bundle.putString(column, cursor.getString(colIdx));
+                        bundle.putString(colName, cursor.getString(i));
                         break;
                 }
             }
@@ -45,15 +48,15 @@ public class MediaUtils {
         cursor = contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             Bundle bundle = new Bundle();
-            for (String column : cursor.getColumnNames()) {
-                int colIdx = cursor.getColumnIndex(column);
-                int type = cursor.getType(colIdx);
+            for (int i = 0; i < cursor.getColumnCount(); ++i) {
+                int type = cursor.getType(i);
+                String colName = cursor.getColumnName(i);
                 switch (type) {
                     case Cursor.FIELD_TYPE_INTEGER:
-                        bundle.putInt(column, cursor.getInt(colIdx));
+                        bundle.putInt(colName, cursor.getInt(i));
                         break;
                     case Cursor.FIELD_TYPE_STRING:
-                        bundle.putString(column, cursor.getString(colIdx));
+                        bundle.putString(colName, cursor.getString(i));
                         break;
                 }
             }
@@ -62,5 +65,56 @@ public class MediaUtils {
         cursor.close();
 
         return list;
+    }
+
+    private static ObjectPool<BitmapDrawable> objPool = new ObjectPool<>(8);
+
+    private static String getAlbumArt(Context context, Audio audio) {
+        int albumId = audio.getAlbumId();
+        String albumArt = null;
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                new String[] {MediaStore.Audio.Albums.ALBUM_ART},
+                MediaStore.Audio.Albums._ID + "=?",
+                new String[] {albumId + ""},
+                null);
+        if (cursor.getCount() > 0 && cursor.getColumnCount() > 0) {
+            cursor.moveToFirst();
+            albumArt = cursor.getString(0);
+        }
+        cursor.close();
+
+        if (albumArt != null) {
+            return albumArt;
+        }
+
+        cursor = context.getContentResolver().query(
+                MediaStore.Audio.Albums.INTERNAL_CONTENT_URI,
+                new String[] {MediaStore.Audio.Albums.ALBUM_ART},
+                MediaStore.Audio.Albums._ID + "=?",
+                new String[] {albumId + ""},
+                null);
+        if (cursor.getCount() > 0 && cursor.getColumnCount() > 0) {
+            cursor.moveToFirst();
+            albumArt = cursor.getString(0);
+        }
+        cursor.close();
+
+        return albumArt;
+    }
+
+    public static BitmapDrawable getAlbumBitmapDrawable(Context context, Audio audio) {
+        String albumArt = getAlbumArt(context, audio);
+        if (albumArt == null) {
+            return null;
+        }
+        BitmapDrawable drawable = objPool.get(albumArt);
+        if (drawable != null) {
+            return drawable;
+        }
+        Bitmap bitmap = BitmapFactory.decodeFile(albumArt);
+        drawable = new BitmapDrawable(context.getResources(), bitmap);
+        objPool.put(albumArt,drawable);
+        return drawable;
     }
 }
