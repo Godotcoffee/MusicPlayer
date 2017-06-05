@@ -5,23 +5,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
+import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.goodjob.musicplayer.R;
-import com.goodjob.musicplayer.entity.Audio;
 import com.goodjob.musicplayer.service.AudioPlayService;
-import com.goodjob.musicplayer.util.AudioList;
 import com.goodjob.musicplayer.util.MediaUtils;
-
-import java.util.List;
 
 public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private SeekBar seekBar;
@@ -45,9 +39,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         synchronized (mLock) {
             setContentView(R.layout.activity_player);
 
-            findViewById(R.id.pause).setOnClickListener(this);
-            findViewById(R.id.next).setOnClickListener(this);
-            findViewById(R.id.previous).setOnClickListener(this);
+            findViewById(R.id.playPauseButton).setOnClickListener(this);
+            findViewById(R.id.nextButton).setOnClickListener(this);
+            findViewById(R.id.previousButton).setOnClickListener(this);
 
             seekBar = (SeekBar) findViewById(R.id.seekBar);
             currentTextView = (TextView) findViewById(R.id.current);
@@ -120,9 +114,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        findViewById(R.id.pause).setOnClickListener(this);
-        findViewById(R.id.next).setOnClickListener(this);
-        findViewById(R.id.previous).setOnClickListener(this);
+        findViewById(R.id.playPauseButton).setOnClickListener(this);
+        findViewById(R.id.nextButton).setOnClickListener(this);
+        findViewById(R.id.previousButton).setOnClickListener(this);
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         currentTextView = (TextView) findViewById(R.id.current);
@@ -159,13 +153,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.pause:
+            case R.id.playPauseButton:
                 //pauseMusic();
                 break;
-            case R.id.next:
+            case R.id.nextButton:
                 //playMusic(position = (position + 1) % audioList.size());
                 break;
-            case R.id.previous:
+            case R.id.previousButton:
                 //stopMusic();
                 break;
         }
