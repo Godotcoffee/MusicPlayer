@@ -10,8 +10,7 @@
         android:layout_height="50dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:scaleType="fitCenter"
-        android:src="@mipmap/ic_launcher"/>
+        android:scaleType="fitCenter" />
 
     <TextView
         android:id="@+id/title"
@@ -19,11 +18,23 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_toRightOf="@+id/album"
         android:maxLines="1"
         android:ellipsize="end"
         android:textSize="25sp"
-        android:text="Title"/>
+        android:text="Title"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/album"
+        android:layout_toStartOf="@+id/status"
+        android:layout_marginStart="11dp" />
+
+    <ImageView
+        android:id="@+id/status"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:scaleType="fitCenter"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:layout_above="@+id/artist" />
 
     <TextView
         android:id="@+id/artist"
@@ -43,7 +54,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/title"
-        android:layout_alignRight="@+id/title"
+        android:layout_alignRight="@+id/status"
+
         android:text="00:00"/>
 
 </RelativeLayout>

@@ -94,8 +94,15 @@ public class ListActivity extends AppCompatActivity {
                 String event = intent.getStringExtra(AudioPlayService.EVENT_KEY);
                 switch (event) {
                     case AudioPlayService.FINISHED_EVENT:
-                        Log.d("eventReceiver", "finished");
                         play((mLastPlay + 1) % audioItemList.size());
+                        adapter.notifyDataSetChanged();
+                        break;
+                    case AudioPlayService.NEXT_ACTION:
+                        play((mLastPlay + 1) % audioItemList.size());
+                        adapter.notifyDataSetChanged();
+                        break;
+                    case AudioPlayService.PREVIOUS_ACTION:
+                        play((mLastPlay + audioItemList.size() - 1) % audioItemList.size());
                         adapter.notifyDataSetChanged();
                         break;
                 }

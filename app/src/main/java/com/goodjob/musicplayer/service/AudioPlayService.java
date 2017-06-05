@@ -42,6 +42,15 @@ public class AudioPlayService extends Service {
     /** 唤出播放器动作 */
     public static final String ACTIVITY_ACTION = "activity";
 
+    /** 切换下一首 */
+    public static final String NEXT_ACTION = "next";
+
+    /** 切换上一首 */
+    public static final String PREVIOUS_ACTION = "previous";
+
+    /** 调整进度 */
+    public static final String SEEK_ACTION = "seek";
+
     /** 播放完成事件 */
     public static final String FINISHED_EVENT = "finished";
 
@@ -68,6 +77,9 @@ public class AudioPlayService extends Service {
 
     /** 音频是否立即播放属性 */
     public static final String AUDIO_PLAY_NOW_BOOL = "playNow";
+
+    /** 音频调节位置 */
+    public static final String AUDIO_SEEK_POS_INT = "seekPos";
 
     /** Notification的ID */
     private static final int NOTIFICATION_ID = 1;
@@ -125,13 +137,6 @@ public class AudioPlayService extends Service {
             try {
                 LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getApplicationContext());
                 while (mThreadContinue) {
-                    /**
-                     * Intent携带的数据格式：
-                     * key - type - description
-                     * current int 当前歌曲所在的进度
-                     * duration int 当前歌曲总长度
-                     * isPlaying boolean 当前是否有歌曲在播放（为了避免错误更新UI）
-                     */
                     Intent intent = getAudioIntent();
                     intent.setAction(BROADCAST_PLAYING_FILTER);
                     lbm.sendBroadcast(intent);
@@ -153,6 +158,12 @@ public class AudioPlayService extends Service {
         intent.setClass(this, PlayerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+    }
+
+    private void changeAudio(String action) {
+        Intent intent = new Intent(BROADCAST_EVENT_FILTER);
+        intent.putExtra(EVENT_KEY, action);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     public AudioPlayService() {
@@ -234,7 +245,7 @@ public class AudioPlayService extends Service {
                         .setContentTitle(mAudioTitle)
                         .setContentText(mAudioArtist)
                         .setOngoing(true)
-                        .setPriority(Notification.PRIORITY_DEFAULT)
+                        .setPriority(Notification.PRIORITY_HIGH)
                         .setContentIntent(pendingIntent).build();
                 //notification.flags = Notification.FLAG_ONGOING_EVENT;
                 startForeground(NOTIFICATION_ID, notification);
@@ -255,6 +266,7 @@ public class AudioPlayService extends Service {
                         mIsPause = true;
                     }
                 }
+                Log.d("player-service", "pause");
                 break;
             // 停止播放
             case STOP_ACTION:
@@ -268,6 +280,19 @@ public class AudioPlayService extends Service {
             // 唤出播放器页面
             case ACTIVITY_ACTION:
                 openPlayerActivity();
+                break;
+            // 下一首
+            case NEXT_ACTION:
+                changeAudio(NEXT_ACTION);
+                break;
+            // 上一首
+            case PREVIOUS_ACTION:
+                changeAudio(PREVIOUS_ACTION);
+                break;
+            // 进度调整
+            case SEEK_ACTION:
+                int pos = intent.getIntExtra(AUDIO_SEEK_POS_INT, 0);
+                mMediaPlayer.seekTo(pos);
                 break;
         }
 

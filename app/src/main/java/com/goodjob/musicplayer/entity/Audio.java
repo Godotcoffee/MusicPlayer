@@ -3,6 +3,8 @@ package com.goodjob.musicplayer.entity;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
+import com.goodjob.musicplayer.util.MediaUtils;
+
 import java.io.Serializable;
 
 /**

@@ -1,5 +1,6 @@
 package com.goodjob.musicplayer.util;
 
+import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -22,7 +23,7 @@ public class MediaUtils {
     public static List<Audio> getAudioList(Context context) {
         List<Audio> list = new ArrayList<>();
 
-        ContentResolver contentResolver = context.getContentResolver();
+        ContentResolver contentResolver = context.getApplicationContext().getContentResolver();
 
         // 获得内部存储的音频
         Cursor cursor = contentResolver.query(MediaStore.Audio.Media.INTERNAL_CONTENT_URI, null, null, null, null);
@@ -69,7 +70,7 @@ public class MediaUtils {
 
     private static ObjectPool<BitmapDrawable> objPool = new ObjectPool<>(8);
 
-    private static String getAlbumArt(Context context, int albumId) {
+    public static String getAlbumArt(Context context, int albumId) {
         String albumArt = null;
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
