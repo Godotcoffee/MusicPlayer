@@ -33,8 +33,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     private List<Audio> audioList;
 
-    private int position;
-
     private Object mLock = new Object();
 
     private void playMusic(int position) {
@@ -102,7 +100,11 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         artistTextView = (TextView) findViewById(R.id.artist);
         albumImageView = (ImageView) findViewById(R.id.album);
 
-        audioList = AudioList.getAudioList(this);
+        String title = getIntent().getStringExtra("title");
+        String artist = getIntent().getStringExtra("artist");
+
+        titleTextView.setText(title);
+        artistTextView.setText(artist);
 
         BroadcastReceiver playingReceiver = new BroadcastReceiver() {
             @Override
@@ -117,10 +119,14 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                             pos = (int) ((current * 1.0 / total) * (max - min));
                         }
                         seekBar.setProgress(pos);
-                        int totalTime = current / 1000;
-                        int minute = totalTime / 60;
-                        int second = totalTime % 60;
+                        int totalSecond = current / 1000;
+                        int minute = totalSecond / 60;
+                        int second = totalSecond % 60;
                         currentTextView.setText(String.format("%02d:%02d", minute, second));
+                        totalSecond = total / 1000;
+                        minute = totalSecond / 60;
+                        second = totalSecond % 60;
+                        durationTextView.setText(String.format("%02d:%02d", minute, second));
                     }
                 }
             }
@@ -131,17 +137,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             public void onReceive(Context context, Intent intent) {
                 String event = intent.getStringExtra("event");
                 switch (event) {
-                    case "finished":
-                        Log.d("eventReceiver", "finished");
-                        playMusic(position = (position + 1) % audioList.size());
-                        break;
                 }
             }
         };
         LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
         lbm.registerReceiver(playingReceiver, new IntentFilter(AudioPlayService.BROADCAST_PLAYING_FILTER));
         lbm.registerReceiver(eventReceiver, new IntentFilter(AudioPlayService.BROADCAST_EVENT_FILTER));
-        playMusic(position = getIntent().getIntExtra("audioPosition", -1));
     }
 
     @Override
@@ -154,13 +155,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.pause:
-                pauseMusic();
+                //pauseMusic();
                 break;
             case R.id.next:
-                playMusic(position = (position + 1) % audioList.size());
+                //playMusic(position = (position + 1) % audioList.size());
                 break;
             case R.id.previous:
-                stopMusic();
+                //stopMusic();
                 break;
         }
     }

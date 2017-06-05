@@ -36,19 +36,20 @@ public class ListActivity extends AppCompatActivity {
         AudioListItem item = audioItemList.get(position);
         if (position != mLastPlay) {
             Audio audio = item.getAudio();
-            Intent intent = new Intent(ListActivity.this, AudioPlayService.class);
-            intent.putExtra("action", "play");
-            intent.putExtra("path", audio.getPath());
-            intent.putExtra("title", audio.getTitle());
-            intent.putExtra("artist", audio.getArtist());
+            Intent serviceIntent = new Intent(this, AudioPlayService.class);
+            serviceIntent.putExtra("action", "play");
+            serviceIntent.putExtra("path", audio.getPath());
+            serviceIntent.putExtra("title", audio.getTitle());
+            serviceIntent.putExtra("artist", audio.getArtist());
 
-            startService(intent);
             item.setPlayStatus(AudioListItem.PLAYING);
 
             if (mLastPlay != -1) {
                 ((AudioListItem) listView.getItemAtPosition(mLastPlay)).setPlayStatus(AudioListItem.DEFAULT);
             }
             mLastPlay = position;
+
+            startService(serviceIntent);
         }
     }
 
@@ -70,9 +71,11 @@ public class ListActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 play(position);
-                //Intent intent = new Intent(ListActivity.this, PlayerActivity.class);
-                //intent.putExtra("audioPosition", position);
-                //startActivity(intent);
+                Audio audio = audioItemList.get(position).getAudio();
+                Intent activityIntent = new Intent(ListActivity.this, PlayerActivity.class);
+                activityIntent.putExtra("title", audio.getTitle());
+                activityIntent.putExtra("artist", audio.getArtist());
+                startActivity(activityIntent);
                 adapter.notifyDataSetChanged();
             }
         });
