@@ -157,8 +157,11 @@ public class AudioPlayService extends Service {
                 } catch (IllegalStateException e) {
                     e.printStackTrace();
                 }
+                Intent notificationIntent = new Intent(this, PlayerActivity.class);
+                notificationIntent.putExtra("title", mAudioTitle);
+                notificationIntent.putExtra("artist", mAudioArtist);
                 PendingIntent pendingIntent = PendingIntent.getActivity(
-                        getApplicationContext(), 1, new Intent(this, PlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+                        getApplicationContext(), 1, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
                 Notification notification = builder
                         .setSmallIcon(R.drawable.ic_player_notification)

@@ -5,6 +5,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.entity.Audio;
+import com.goodjob.musicplayer.entity.AudioListItem;
 import com.goodjob.musicplayer.util.MediaUtils;
 
 import java.util.List;
@@ -22,11 +24,11 @@ import java.util.List;
  * Created by Godot on 2017/6/1.
  */
 
-public class AudioListAdapter extends ArrayAdapter<Audio> {
+public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
     private Context mContext;
     private int mResource;
     private LayoutInflater mInflater;
-    public AudioListAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<Audio> objects) {
+    public AudioListAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<AudioListItem> objects) {
         super(context, resource, objects);
         mContext = context;
         mResource = resource;
@@ -45,12 +47,16 @@ public class AudioListAdapter extends ArrayAdapter<Audio> {
         TextView duration = (TextView) convertView.findViewById(R.id.duration);
         ImageView album = (ImageView) convertView.findViewById(R.id.album);
 
-        Audio audio = getItem(position);
+        AudioListItem audioItem = getItem(position);
+        Audio audio = audioItem.getAudio();
 
         title.setText(audio.getTitle());
         artist.setText(audio.getArtist());
+
         BitmapDrawable drawable = MediaUtils.getAlbumBitmapDrawable(mContext, audio);
-        if (drawable != null) {
+        if (audioItem.getPlayStatus() == AudioListItem.PLAYING) {
+            album.setImageResource(R.drawable.ic_player_big);
+        } else if (drawable != null) {
             album.setImageDrawable(drawable);
         } else {
             album.setImageResource(R.drawable.no_album);
