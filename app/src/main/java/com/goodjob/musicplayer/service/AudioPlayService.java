@@ -17,6 +17,8 @@ import com.goodjob.musicplayer.activity.PlayerActivity;
 
 import java.io.IOException;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 public class AudioPlayService extends Service {
     /** Service发送当前播放状态广播的ACTION FILTER */
     public static final String BROADCAST_PLAYING_FILTER = "AUDIO_PLAYER_PLAYING";
@@ -45,6 +47,8 @@ public class AudioPlayService extends Service {
     private String mAudioTitle = "";
     /** 当前播放的歌曲的歌手 */
     private String mAudioArtist = "";
+    /** 当前播放的专辑id */
+    private int mAudioAlbumId;
 
     // 用于广播当前播放状态
     private Runnable playingRunnable = new Runnable() {
@@ -73,8 +77,11 @@ public class AudioPlayService extends Service {
                         isPlaying = mMediaPlayer.isPlaying();
                     }
                     intent.putExtra("current", current);
-                    intent.putExtra("total", duration);
+                    intent.putExtra("duration", duration);
                     intent.putExtra("isPlaying", isPlaying);
+                    intent.putExtra("title", mAudioTitle);
+                    intent.putExtra("artist", mAudioArtist);
+                    intent.putExtra("albumId", mAudioAlbumId);
                     lbm.sendBroadcast(intent);
                     Thread.sleep(500);
                 }
@@ -89,15 +96,32 @@ public class AudioPlayService extends Service {
     private Thread mThread;
     private boolean mThreadContinue;
 
+    private void openPlayerActivity() {
+        Intent intent = new Intent(this, PlayerActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        int current, duration;
+        boolean isPlaying;
+        synchronized (mLock) {
+            current = mMediaPlayer.getCurrentPosition();
+            duration = mMediaPlayer.getDuration();
+            isPlaying = mMediaPlayer.isPlaying();
+        }
+        intent.putExtra("current", current);
+        intent.putExtra("duration", duration);
+        intent.putExtra("isPlaying", isPlaying);
+        intent.putExtra("title", mAudioTitle);
+        intent.putExtra("artist", mAudioArtist);
+        intent.putExtra("albumId", mAudioAlbumId);
+        startActivity(intent);
+    }
+
     public AudioPlayService() {
     }
 
     @Override
     public void onCreate() {
         Log.d("player-service", "create");
-        if (mMediaPlayer == null) {
-            mMediaPlayer = new MediaPlayer();
-        }
+        mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -111,10 +135,9 @@ public class AudioPlayService extends Service {
         mThreadContinue = true;
         mIsPlay = false;
         mIsPause = false;
-        if (mThread == null) {
-            mThread = new Thread(playingRunnable);
-            mThread.start();
-        }
+        mThread = new Thread(playingRunnable);
+        mThread.start();
+
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
 
@@ -131,6 +154,7 @@ public class AudioPlayService extends Service {
          *               stop 停止播放
          */
         String action = intent.getStringExtra("action");
+
         switch (action) {
             // 播放
             case "play":
@@ -140,6 +164,8 @@ public class AudioPlayService extends Service {
                 mAudioTitle = intent.getStringExtra("title");
                 // 歌手
                 mAudioArtist = intent.getStringExtra("artist");
+                // 专辑id
+                mAudioAlbumId = intent.getIntExtra("albumId", 0);
                 // 是否播放
                 boolean playNow = intent.getBooleanExtra("playNow", true);
                 try {
@@ -157,10 +183,9 @@ public class AudioPlayService extends Service {
                 } catch (IllegalStateException e) {
                     e.printStackTrace();
                 }
-                Intent notificationIntent = new Intent(this, PlayerActivity.class);
-                notificationIntent.putExtra("title", mAudioTitle);
-                notificationIntent.putExtra("artist", mAudioArtist);
-                PendingIntent pendingIntent = PendingIntent.getActivity(
+                Intent notificationIntent = new Intent(this, AudioPlayService.class);
+                notificationIntent.putExtra("action", "notification");
+                PendingIntent pendingIntent = PendingIntent.getService(
                         getApplicationContext(), 1, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
                 Notification notification = builder
@@ -200,6 +225,9 @@ public class AudioPlayService extends Service {
                     mMediaPlayer.stop();
                 }
                 break;
+            case "notification":
+                openPlayerActivity();
+                break;
         }
 
         return START_NOT_STICKY;
@@ -209,9 +237,11 @@ public class AudioPlayService extends Service {
     public void onDestroy() {
         mIsPlay = false;
         mThreadContinue = false;
-        synchronized (mLock) {
-            mMediaPlayer.stop();
-            mMediaPlayer.release();
+        if (mMediaPlayer != null) {
+            synchronized (mLock) {
+                mMediaPlayer.stop();
+                mMediaPlayer.release();
+            }
         }
         Log.d("player-service", "destroy");
     }

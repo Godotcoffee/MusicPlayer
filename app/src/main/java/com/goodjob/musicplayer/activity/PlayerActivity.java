@@ -35,6 +35,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     private Object mLock = new Object();
 
+    private String mTitle;
+    private String mArtist;
+    private int mAlbumId;
+
     private void playMusic(int position) {
         if (position < 0 || position > audioList.size()) {
             return;
@@ -100,11 +104,28 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         artistTextView = (TextView) findViewById(R.id.artist);
         albumImageView = (ImageView) findViewById(R.id.album);
 
-        String title = getIntent().getStringExtra("title");
-        String artist = getIntent().getStringExtra("artist");
+        mTitle = getIntent().getStringExtra("title");
+        mArtist = getIntent().getStringExtra("artist");
+        mAlbumId = getIntent().getIntExtra("albumId", -1);
+        int current = getIntent().getIntExtra("current", 0);
+        int duration = getIntent().getIntExtra("duration", 0);
 
-        titleTextView.setText(title);
-        artistTextView.setText(artist);
+        int min = 0, max = seekBar.getMax();
+        int pos = 0;
+        if (duration != 0 && (max - min) != 0) {
+            pos = (int) ((current * 1.0 / duration) * (max - min));
+        }
+        seekBar.setProgress(pos);
+
+        titleTextView.setText(mTitle);
+        artistTextView.setText(mArtist);
+
+        BitmapDrawable drawable = MediaUtils.getAlbumBitmapDrawable(PlayerActivity.this, mAlbumId);
+        if (drawable != null) {
+            albumImageView.setImageDrawable(drawable);
+        } else {
+            albumImageView.setImageResource(R.drawable.no_album);
+        }
 
         BroadcastReceiver playingReceiver = new BroadcastReceiver() {
             @Override
@@ -112,21 +133,43 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 synchronized (mLock) {
                     if (intent.getBooleanExtra("isPlaying", false)) {
                         int current = intent.getIntExtra("current", 0);
-                        int total = intent.getIntExtra("total", 1);
+                        int duration = intent.getIntExtra("duration", 1);
                         int min = 0, max = seekBar.getMax();
                         int pos = 0;
-                        if (total != 0 && (max - min) != 0) {
-                            pos = (int) ((current * 1.0 / total) * (max - min));
+                        if (duration != 0 && (max - min) != 0) {
+                            pos = (int) ((current * 1.0 / duration) * (max - min));
                         }
                         seekBar.setProgress(pos);
                         int totalSecond = current / 1000;
                         int minute = totalSecond / 60;
                         int second = totalSecond % 60;
                         currentTextView.setText(String.format("%02d:%02d", minute, second));
-                        totalSecond = total / 1000;
+                        totalSecond = duration / 1000;
                         minute = totalSecond / 60;
                         second = totalSecond % 60;
                         durationTextView.setText(String.format("%02d:%02d", minute, second));
+
+                        String title = intent.getStringExtra("title");
+                        String artist = intent.getStringExtra("artist");
+                        int albumId = intent.getIntExtra("albumId", -1);
+
+                        if (title != null && !title.equals(mTitle)) {
+                            titleTextView.setText(title);
+                            mTitle = title;
+                        }
+                        if (artist != null && !artist.equals(mArtist)) {
+                            artistTextView.setText(artist);
+                            mArtist = artist;
+                        }
+                        if (albumId != mAlbumId) {
+                            BitmapDrawable drawable = MediaUtils.getAlbumBitmapDrawable(PlayerActivity.this, albumId);
+                            if (drawable != null) {
+                                albumImageView.setImageDrawable(drawable);
+                            } else {
+                                albumImageView.setImageResource(R.drawable.no_album);
+                            }
+                            mAlbumId = albumId;
+                        }
                     }
                 }
             }
@@ -149,6 +192,25 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     protected void onDestroy() {
         super.onDestroy();
         //stopService(new Intent(this, AudioPlayService.class));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String title = intent.getStringExtra("title");
+        String artist = intent.getStringExtra("artist");
+        int current = intent.getIntExtra("current", 0);
+        int duration = intent.getIntExtra("duration", 0);
+
+        int min = 0, max = seekBar.getMax();
+        int pos = 0;
+        if (duration != 0 && (max - min) != 0) {
+            pos = (int) ((current * 1.0 / duration) * (max - min));
+        }
+        seekBar.setProgress(pos);
+
+        titleTextView.setText(title);
+        artistTextView.setText(artist);
     }
 
     @Override

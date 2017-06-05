@@ -69,8 +69,7 @@ public class MediaUtils {
 
     private static ObjectPool<BitmapDrawable> objPool = new ObjectPool<>(8);
 
-    private static String getAlbumArt(Context context, Audio audio) {
-        int albumId = audio.getAlbumId();
+    private static String getAlbumArt(Context context, int albumId) {
         String albumArt = null;
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
@@ -104,7 +103,14 @@ public class MediaUtils {
     }
 
     public static BitmapDrawable getAlbumBitmapDrawable(Context context, Audio audio) {
-        String albumArt = getAlbumArt(context, audio);
+        if (audio == null) {
+            return null;
+        }
+        return getAlbumBitmapDrawable(context, audio.getAlbumId());
+    }
+
+    public static BitmapDrawable getAlbumBitmapDrawable(Context context, int albumId) {
+        String albumArt = getAlbumArt(context, albumId);
         if (albumArt == null) {
             return null;
         }
