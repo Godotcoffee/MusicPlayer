@@ -34,12 +34,12 @@ public class ListActivity extends AppCompatActivity {
 
     private Intent getAudioIntent(Audio audio) {
         Intent intent = new Intent();
-        intent.putExtra("path", audio.getPath());
-        intent.putExtra("title", audio.getTitle());
-        intent.putExtra("artist", audio.getArtist());
-        intent.putExtra("albumId", audio.getAlbumId());
-        intent.putExtra("duration", audio.getDuration());
-        intent.putExtra("current", 0);
+        intent.putExtra(AudioPlayService.AUDIO_PATH_STR, audio.getPath());
+        intent.putExtra(AudioPlayService.AUDIO_TITLE_STR, audio.getTitle());
+        intent.putExtra(AudioPlayService.AUDIO_ARTIST_STR, audio.getArtist());
+        intent.putExtra(AudioPlayService.AUDIO_ALBUM_ID_INT, audio.getAlbumId());
+        intent.putExtra(AudioPlayService.AUDIO_DURATION_INT, audio.getDuration());
+        intent.putExtra(AudioPlayService.AUDIO_CURRENT_INT, 0);
         return intent;
     }
 
@@ -48,7 +48,7 @@ public class ListActivity extends AppCompatActivity {
         if (position != mLastPlay) {
             Audio audio = item.getAudio();
             Intent serviceIntent = getAudioIntent(audio);
-            serviceIntent.putExtra("action", "play");
+            serviceIntent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PLAY_ACTION);
             serviceIntent.setClass(this, AudioPlayService.class);
 
             item.setPlayStatus(AudioListItem.PLAYING);
@@ -91,9 +91,9 @@ public class ListActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String event = intent.getStringExtra("event");
+                String event = intent.getStringExtra(AudioPlayService.EVENT_KEY);
                 switch (event) {
-                    case "finished":
+                    case AudioPlayService.FINISHED_EVENT:
                         Log.d("eventReceiver", "finished");
                         play((mLastPlay + 1) % audioItemList.size());
                         adapter.notifyDataSetChanged();
