@@ -32,7 +32,7 @@ public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
         TextView title;
         TextView artist;
         TextView duration;
-        ImageView album;
+        //ImageView album;
         ImageView status;
     }
 
@@ -54,7 +54,7 @@ public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
             viewHolder.title = (TextView) convertView.findViewById(R.id.title);
             viewHolder.artist = (TextView) convertView.findViewById(R.id.artist);
             viewHolder.duration = (TextView) convertView.findViewById(R.id.duration);
-            viewHolder.album = (ImageView) convertView.findViewById(R.id.album);
+            //viewHolder.album = (ImageView) convertView.findViewById(R.id.album);
             viewHolder.status = (ImageView) convertView.findViewById(R.id.status);
             convertView.setTag(viewHolder);
         } else {
@@ -73,8 +73,8 @@ public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
 
         viewHolder.duration.setText(String.format("%02d:%02d", minute, second));
 
-        viewHolder.album.setTag(audio.getAlbumId());
-        mAsyncBitmapLoader.load(viewHolder.album, audio.getAlbumId(), R.drawable.no_album);
+        //viewHolder.album.setTag(audio.getAlbumId());
+        //mAsyncBitmapLoader.load(viewHolder.album, audio.getAlbumId(), R.drawable.no_album);
 
         return convertView;
     }

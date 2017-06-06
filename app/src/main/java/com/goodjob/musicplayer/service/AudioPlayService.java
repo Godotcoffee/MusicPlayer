@@ -13,6 +13,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.goodjob.musicplayer.R;
+import com.goodjob.musicplayer.activity.ListActivity;
 import com.goodjob.musicplayer.activity.PlayerActivity;
 
 import java.io.IOException;
@@ -155,7 +156,7 @@ public class AudioPlayService extends Service {
 
     private void openPlayerActivity() {
         Intent intent = getAudioIntent();
-        intent.setClass(this, PlayerActivity.class);
+        intent.setClass(this, ListActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }

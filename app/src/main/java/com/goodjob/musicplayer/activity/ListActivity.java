@@ -11,8 +11,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.adapter.AudioListAdapter;
@@ -29,6 +31,10 @@ public class ListActivity extends AppCompatActivity {
     private int mLastPlay = -1;
     private ListView listView;
     private ArrayAdapter adapter;
+
+    private TextView mBarTitle;
+    private TextView mBarArtist;
+    private ImageView mBarAlbum;
 
     List<AudioListItem> audioItemList;
 
@@ -58,6 +64,10 @@ public class ListActivity extends AppCompatActivity {
             }
             mLastPlay = position;
 
+            mBarTitle.setText(audio.getTitle());
+            mBarArtist.setText(audio.getArtist());
+            mBarAlbum.setImageDrawable(MediaUtils.getAlbumBitmapDrawable(this, audio));
+
             startService(serviceIntent);
         }
     }
@@ -66,6 +76,11 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+
+        View barView = findViewById(R.id.bar);
+        mBarTitle = (TextView) barView.findViewById(R.id.title);
+        mBarArtist = (TextView) barView.findViewById(R.id.artist);
+        mBarAlbum = (ImageView) barView.findViewById(R.id.album);
 
         List<Audio> audioList = AudioList.getAudioList(this);
         audioItemList = new ArrayList<>();
@@ -83,8 +98,19 @@ public class ListActivity extends AppCompatActivity {
                 Audio audio = audioItemList.get(position).getAudio();
                 Intent activityIntent = getAudioIntent(audio);
                 activityIntent.setClass(ListActivity.this, PlayerActivity.class);
-                startActivity(activityIntent);
+                //startActivity(activityIntent);
                 adapter.notifyDataSetChanged();
+            }
+        });
+
+        barView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
+                    Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
+                    intent.setClass(ListActivity.this, PlayerActivity.class);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -108,5 +134,6 @@ public class ListActivity extends AppCompatActivity {
                 }
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_EVENT_FILTER));
+        Log.d("pos", mLastPlay + "");
     }
 }
