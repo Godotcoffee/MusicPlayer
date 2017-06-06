@@ -141,7 +141,8 @@
             android:layout_gravity="center"
             android:background="@drawable/shadowed_circle_red"
             tools:layout_editor_absoluteX="160dp"
-            tools:layout_editor_absoluteY="431dp">
+            tools:layout_editor_absoluteY="431dp"
+            android:clickable="true">
 
             <ImageButton
                 android:id="@+id/playPauseButton"

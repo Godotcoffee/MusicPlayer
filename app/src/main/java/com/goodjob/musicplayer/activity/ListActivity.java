@@ -8,12 +8,12 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.goodjob.musicplayer.R;
@@ -35,6 +35,8 @@ public class ListActivity extends AppCompatActivity {
     private TextView mBarTitle;
     private TextView mBarArtist;
     private ImageView mBarAlbum;
+
+    private BroadcastReceiver mEventReceiver;
 
     List<AudioListItem> audioItemList;
 
@@ -110,11 +112,12 @@ public class ListActivity extends AppCompatActivity {
                     Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                     intent.setClass(ListActivity.this, PlayerActivity.class);
                     startActivity(intent);
+                    overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);
                 }
             }
         });
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(mEventReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String event = intent.getStringExtra(AudioPlayService.EVENT_KEY);
@@ -132,8 +135,21 @@ public class ListActivity extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
                         break;
                 }
+                Log.d("event", "get");
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_EVENT_FILTER));
         Log.d("pos", mLastPlay + "");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this, AudioPlayService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mEventReceiver);
+    }
+
+    @Override
+    public void finish() {
+        moveTaskToBack(false);
     }
 }

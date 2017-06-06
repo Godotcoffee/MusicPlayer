@@ -8,6 +8,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -34,6 +36,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private int mAlbumId = -1;
 
     private boolean onDrag = false;
+
+    private BroadcastReceiver mPlayingReceiver;
 
     /**
      * UI更新
@@ -128,7 +132,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        findViewById(R.id.playPauseButton).setOnClickListener(this);
+        findViewById(R.id.playPauseButtonBackground).setOnClickListener(this);
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
 
@@ -176,21 +180,21 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         updateUI(getIntent().getExtras());
 
-        BroadcastReceiver playingReceiver = new BroadcastReceiver() {
+        mPlayingReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 updateUI(intent.getExtras());
             }
         };
 
-        LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(this);
-        lbm.registerReceiver(playingReceiver, new IntentFilter(AudioPlayService.BROADCAST_PLAYING_FILTER));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mPlayingReceiver,
+                new IntentFilter(AudioPlayService.BROADCAST_PLAYING_FILTER));
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //stopService(new Intent(this, AudioPlayService.class));
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mPlayingReceiver);
     }
 
     @Override
@@ -202,8 +206,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.playPauseButton:
+            case R.id.playPauseButtonBackground:
                 pauseMusic();
+                Log.d("pause", "push");
                 break;
             case R.id.nextButton:
                 nextMusic();
@@ -212,5 +217,16 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 previousMusic();
                 break;
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+                finish();
+                overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_bottom);
+                break;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }
