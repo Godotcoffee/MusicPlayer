@@ -11,11 +11,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.andremion.music.MusicCoverView;
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.service.AudioPlayService;
 import com.goodjob.musicplayer.util.MediaUtils;
@@ -26,7 +27,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private TextView durationTextView;
     private TextView titleTextView;
     private TextView artistTextView;
-    private ImageView albumImageView;
+    private MusicCoverView albumImageView;
+    private ImageButton pauseButton;
 
     private Object mLock = new Object();
 
@@ -137,6 +139,11 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.REPLAY_ACTION);
             mIsPlay = true;
         }
+        if (albumImageView.isRunning()) {
+            albumImageView.stop();
+        } else {
+            albumImageView.morph();
+        }
         startService(intent);
     }
 
@@ -160,7 +167,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        findViewById(R.id.playPauseButtonBackground).setOnClickListener(this);
+
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
         findViewById(R.id.shuffleButton).setOnClickListener(this);
@@ -170,7 +177,25 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         durationTextView = (TextView) findViewById(R.id.duration);
         titleTextView = (TextView) findViewById(R.id.title);
         artistTextView = (TextView) findViewById(R.id.artist);
-        albumImageView = (ImageView) findViewById(R.id.album);
+        albumImageView = (MusicCoverView) findViewById(R.id.album);
+        pauseButton = (ImageButton) findViewById(R.id.playPauseButton);
+
+        pauseButton.setOnClickListener(this);
+
+        //专辑封面旋转
+        albumImageView.setCallbacks(new MusicCoverView.Callbacks() {
+            @Override
+            public void onMorphEnd(MusicCoverView coverView) {
+                if (MusicCoverView.SHAPE_CIRCLE == coverView.getShape()) {
+                    coverView.start();
+                }
+            }
+
+            @Override
+            public void onRotateEnd(MusicCoverView coverView) {
+                coverView.morph();
+            }
+        });
 
         // 进度条事件
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -235,7 +260,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.playPauseButtonBackground:
+            case R.id.playPauseButton:
                 pauseMusic();
                 Log.d("pause", "push");
                 break;
