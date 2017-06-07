@@ -132,11 +132,10 @@ public class ListActivity extends AppCompatActivity {
     private void musicChange(boolean next, boolean fromUser) {
         if (mIsShuffle) {
             if (next) {
-                int index = mShuffleIndex.get(mLastIndex = (mLastIndex + 1) % mShuffleIndex.size());
-                Log.d("debug", mLastIndex + " " + mShuffleIndex.size());
-                if (!fromUser && mLastIndex == 0 && !mIsLoop) {
+                if (!fromUser && (mLastIndex + 1) % mShuffleIndex.size() == 0 && !mIsLoop) {
 
                 } else {
+                    int index = mShuffleIndex.get(mLastIndex = (mLastIndex + 1) % mShuffleIndex.size());
                     playAudio(index);
                 }
             } else {
@@ -145,7 +144,8 @@ public class ListActivity extends AppCompatActivity {
             }
         } else {
             if (next) {
-                if (!fromUser && mLastIndex == 0) {
+                Log.d("debug", "next");
+                if (!fromUser && (mLastPlay + 1) % audioItemList.size() == 0 && !mIsLoop) {
 
                 } else {
                     playAudio((mLastPlay + 1) % audioItemList.size());

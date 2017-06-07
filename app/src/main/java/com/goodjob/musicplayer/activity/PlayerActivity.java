@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -102,16 +104,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 second = totalSecond % 60;
                 durationTextView.setText(String.format("%02d:%02d", minute, second));
             }
-
-            titleTextView.setText(mTitle);
-            artistTextView.setText(mArtist);
-
-            BitmapDrawable drawable = MediaUtils.getAlbumBitmapDrawable(this, mAlbumId);
-            if (drawable != null) {
-                albumImageView.setImageDrawable(drawable);
-            } else {
-                albumImageView.setImageResource(R.drawable.no_album);
-            }
         }
     }
 
@@ -167,7 +159,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
         findViewById(R.id.shuffleButton).setOnClickListener(this);
@@ -196,6 +187,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 coverView.morph();
             }
         });
+
+        albumImageView.start();
 
         // 进度条事件
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

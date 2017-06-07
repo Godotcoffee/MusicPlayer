@@ -182,7 +182,7 @@ public class AudioPlayService extends Service {
                     Intent intent = getAudioIntent();
                     intent.setAction(BROADCAST_PLAYING_FILTER);
                     lbm.sendBroadcast(intent);
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 }
             } catch (InterruptedException e) {
                 Log.d("player-service-thread", "interrupted");
