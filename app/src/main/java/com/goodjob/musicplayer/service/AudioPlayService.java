@@ -1,7 +1,6 @@
 package com.goodjob.musicplayer.service;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.util.Log;
 
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.activity.ListActivity;
-import com.goodjob.musicplayer.activity.PlayerActivity;
 
 import java.io.IOException;
 
@@ -34,8 +32,11 @@ public class AudioPlayService extends Service {
     /** 开始播放动作 */
     public static final String PLAY_ACTION = "play";
 
-    /** 切换暂停动作 */
+    /** 暂停动作 */
     public static final String PAUSE_ACTION = "pause";
+
+    /** 继续播放动作 */
+    public static final String REPLAY_ACTION = "replay";
 
     /** 停止播放动作 */
     public static final String STOP_ACTION = "stop";
@@ -54,6 +55,18 @@ public class AudioPlayService extends Service {
 
     /** 播放完成事件 */
     public static final String FINISHED_EVENT = "finished";
+
+    /** 下一首事件 */
+    public static final String NEXT_EVENT = "next_event";
+
+    /** 上一首事件 */
+    public static final String PREVIOUS_EVENT = "previous_event";
+
+    /** 暂停事件 */
+    public static final String PAUSE_EVENT = "pause_event";
+
+    /** 继续事件 */
+    public static final String REPLAY_EVENT = "replay_event";
 
     /** 音频标题属性 */
     public static final String AUDIO_TITLE_STR = "title";
@@ -161,9 +174,9 @@ public class AudioPlayService extends Service {
         startActivity(intent);
     }
 
-    private void changeAudio(String action) {
+    private void sendAudioEvent(String event) {
         Intent intent = new Intent(BROADCAST_EVENT_FILTER);
-        intent.putExtra(EVENT_KEY, action);
+        intent.putExtra(EVENT_KEY, event);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
@@ -177,11 +190,7 @@ public class AudioPlayService extends Service {
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                synchronized (mLock) {
-                    Intent intent = new Intent(BROADCAST_EVENT_FILTER);
-                    intent.putExtra(EVENT_KEY, FINISHED_EVENT);
-                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-                }
+                sendAudioEvent(FINISHED_EVENT);
             }
         });
         mThreadContinue = true;
@@ -252,22 +261,29 @@ public class AudioPlayService extends Service {
                 startForeground(NOTIFICATION_ID, notification);
                 //mNotificationManager.notify(NOTIFICATION_ID, notification);
                 break;
-            // 切换暂停状态
+            // 暂停
             case PAUSE_ACTION:
+                if (mIsPlay) {
+                    if (!mIsPause) {
+                        synchronized (mLock) {
+                            mMediaPlayer.pause();
+                        }
+                        mIsPause = true;
+                    }
+                    sendAudioEvent(PAUSE_EVENT);
+                }
+                Log.d("player-service", "pause");
+                break;
+            case REPLAY_ACTION:
                 if (mIsPlay) {
                     if (mIsPause) {
                         synchronized (mLock) {
                             mMediaPlayer.start();
                         }
                         mIsPause = false;
-                    } else {
-                        synchronized (mLock) {
-                            mMediaPlayer.pause();
-                        }
-                        mIsPause = true;
                     }
+                    sendAudioEvent(REPLAY_EVENT);
                 }
-                Log.d("player-service", "pause");
                 break;
             // 停止播放
             case STOP_ACTION:
@@ -284,11 +300,11 @@ public class AudioPlayService extends Service {
                 break;
             // 下一首
             case NEXT_ACTION:
-                changeAudio(NEXT_ACTION);
+                sendAudioEvent(NEXT_EVENT);
                 break;
             // 上一首
             case PREVIOUS_ACTION:
-                changeAudio(PREVIOUS_ACTION);
+                sendAudioEvent(PREVIOUS_EVENT);
                 break;
             // 进度调整
             case SEEK_ACTION:

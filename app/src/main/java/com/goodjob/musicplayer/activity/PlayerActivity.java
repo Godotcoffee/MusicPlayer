@@ -36,6 +36,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private int mAlbumId = -1;
 
     private boolean onDrag = false;
+    private boolean isRandom;
+    private boolean isPlay;
 
     private BroadcastReceiver mPlayingReceiver;
 
@@ -43,11 +45,15 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
      * UI更新
      * @param bundle 包含音乐信息的bundle
      */
-    private void updateUI(Bundle bundle) {
+    private void updateUI(Bundle bundle, boolean isFirst) {
         synchronized (mLock) {
             String title = bundle.getString(AudioPlayService.AUDIO_TITLE_STR);
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
             int albumId = bundle.getInt(AudioPlayService.AUDIO_ALBUM_ID_INT, -1);
+            if (isFirst) {
+                isRandom = bundle.getBoolean(ListActivity.LIST_RANDOM_ORDER_BOOL, false);
+                isPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
+            }
 
             if (mTitle == null || !mTitle.equals(title)) {
                 titleTextView.setText(mTitle = title);
@@ -119,7 +125,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     // 切换暂停
     private void pauseMusic() {
         Intent intent = new Intent(this, AudioPlayService.class);
-        intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PAUSE_ACTION);
+        if (isPlay) {
+            intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PAUSE_ACTION);
+            isPlay = false;
+        } else {
+            intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.REPLAY_ACTION);
+            isPlay = true;
+        }
         startService(intent);
     }
 
@@ -178,12 +190,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
 
-        updateUI(getIntent().getExtras());
+        updateUI(getIntent().getExtras(), true);
 
         mPlayingReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                updateUI(intent.getExtras());
+                updateUI(intent.getExtras(), false);
             }
         };
 
@@ -200,7 +212,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        updateUI(intent.getExtras());
+        updateUI(intent.getExtras(), false);
     }
 
     @Override
