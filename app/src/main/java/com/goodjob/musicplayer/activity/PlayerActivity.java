@@ -14,9 +14,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.goodjob.musicplayer.R;
-import com.goodjob.musicplayer.entity.Audio;
 import com.goodjob.musicplayer.service.AudioPlayService;
 import com.goodjob.musicplayer.util.MediaUtils;
 
@@ -36,8 +36,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private int mAlbumId = -1;
 
     private boolean onDrag = false;
-    private boolean isRandom;
-    private boolean isPlay;
+    private boolean mIsShuffle;
+    private boolean mIsPlay;
 
     private BroadcastReceiver mPlayingReceiver;
 
@@ -51,8 +51,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
             int albumId = bundle.getInt(AudioPlayService.AUDIO_ALBUM_ID_INT, -1);
             if (isFirst) {
-                isRandom = bundle.getBoolean(ListActivity.LIST_RANDOM_ORDER_BOOL, false);
-                isPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
+                mIsShuffle = bundle.getBoolean(AudioPlayService.LIST_ORDER_BOOL, false);
+                mIsPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
+                if (mIsShuffle) {
+                    Toast.makeText(this, "随机播放", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "顺序播放", Toast.LENGTH_SHORT).show();
+                }
             }
 
             if (mTitle == null || !mTitle.equals(title)) {
@@ -125,18 +130,29 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     // 切换暂停
     private void pauseMusic() {
         Intent intent = new Intent(this, AudioPlayService.class);
-        if (isPlay) {
+        if (mIsPlay) {
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PAUSE_ACTION);
-            isPlay = false;
+            mIsPlay = false;
         } else {
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.REPLAY_ACTION);
-            isPlay = true;
+            mIsPlay = true;
         }
         startService(intent);
     }
 
     private void stopMusic() {
 
+    }
+
+    /**
+     * 切换播放顺序
+     */
+    private void changeListOrder() {
+        Intent intent = new Intent(this, AudioPlayService.class);
+        intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.CHANGE_LIST_SHUFFLE_ACTION);
+        intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle = !mIsShuffle);
+        startService(intent);
+        Toast.makeText(this, "切换到" + (mIsShuffle ? "随机播放" : "顺序播放"), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -147,6 +163,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.playPauseButtonBackground).setOnClickListener(this);
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
+        findViewById(R.id.shuffleButton).setOnClickListener(this);
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         currentTextView = (TextView) findViewById(R.id.current);
@@ -227,6 +244,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.previousButton:
                 previousMusic();
+                break;
+            case R.id.shuffleButton:
+                changeListOrder();
                 break;
         }
     }

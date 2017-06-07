@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -53,6 +54,15 @@ public class AudioPlayService extends Service {
     /** 调整进度 */
     public static final String SEEK_ACTION = "seek";
 
+    /** 改变播放顺序 */
+    public static final String CHANGE_LIST_SHUFFLE_ACTION = "list_shuffle";
+
+    /** 改变循环方式 */
+    public static final String CHANGE_LIST_LOOP_ACTION = "loop";
+
+    /** 改变单曲循环 */
+    public static final String CHANGE_AUDIO_REPEAT_ACTION = "repeat";
+
     /** 播放完成事件 */
     public static final String FINISHED_EVENT = "finished";
 
@@ -67,6 +77,15 @@ public class AudioPlayService extends Service {
 
     /** 继续事件 */
     public static final String REPLAY_EVENT = "replay_event";
+
+    /** 列表播放顺序改变 */
+    public static final String LIST_ORDER_EVENT = "list_order_event";
+
+    /** 列表循环改变 */
+    public static final String LIST_LOOP_EVENT = "list_loop_event";
+
+    /** 单曲循环改变 */
+    public static final String AUDIO_LOOP_EVENT = "audio_loop_event";
 
     /** 音频标题属性 */
     public static final String AUDIO_TITLE_STR = "title";
@@ -94,6 +113,15 @@ public class AudioPlayService extends Service {
 
     /** 音频调节位置 */
     public static final String AUDIO_SEEK_POS_INT = "seekPos";
+
+    /** 列表顺序 */
+    public static final String LIST_ORDER_BOOL = "list_is_order";
+
+    /** 列表总体循环 */
+    public static final String LIST_LOOP_BOOL = "list_is_loop";
+
+    /** 单曲循环 */
+    public static final String ADUIO_REPEAT_BOOL = "audio_is_repeat";
 
     /** Notification的ID */
     private static final int NOTIFICATION_ID = 1;
@@ -174,8 +202,11 @@ public class AudioPlayService extends Service {
         startActivity(intent);
     }
 
-    private void sendAudioEvent(String event) {
+    private void sendAudioEvent(String event, Bundle bundle) {
         Intent intent = new Intent(BROADCAST_EVENT_FILTER);
+        if (bundle != null) {
+            intent.putExtras(bundle);
+        }
         intent.putExtra(EVENT_KEY, event);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
@@ -190,7 +221,7 @@ public class AudioPlayService extends Service {
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                sendAudioEvent(FINISHED_EVENT);
+                sendAudioEvent(FINISHED_EVENT, null);
             }
         });
         mThreadContinue = true;
@@ -270,7 +301,7 @@ public class AudioPlayService extends Service {
                         }
                         mIsPause = true;
                     }
-                    sendAudioEvent(PAUSE_EVENT);
+                    sendAudioEvent(PAUSE_EVENT, null);
                 }
                 Log.d("player-service", "pause");
                 break;
@@ -282,7 +313,7 @@ public class AudioPlayService extends Service {
                         }
                         mIsPause = false;
                     }
-                    sendAudioEvent(REPLAY_EVENT);
+                    sendAudioEvent(REPLAY_EVENT, null);
                 }
                 break;
             // 停止播放
@@ -300,16 +331,20 @@ public class AudioPlayService extends Service {
                 break;
             // 下一首
             case NEXT_ACTION:
-                sendAudioEvent(NEXT_EVENT);
+                sendAudioEvent(NEXT_EVENT, null);
                 break;
             // 上一首
             case PREVIOUS_ACTION:
-                sendAudioEvent(PREVIOUS_EVENT);
+                sendAudioEvent(PREVIOUS_EVENT, null);
                 break;
             // 进度调整
             case SEEK_ACTION:
                 int pos = intent.getIntExtra(AUDIO_SEEK_POS_INT, 0);
                 mMediaPlayer.seekTo(pos);
+                break;
+            // 切换播放顺序
+            case CHANGE_LIST_SHUFFLE_ACTION:
+                sendAudioEvent(LIST_ORDER_EVENT, intent.getExtras());
                 break;
         }
 

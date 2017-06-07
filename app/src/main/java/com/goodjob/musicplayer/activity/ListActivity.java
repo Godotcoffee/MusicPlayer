@@ -13,9 +13,7 @@ import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,16 +29,13 @@ import com.goodjob.musicplayer.service.AudioPlayService;
 import com.goodjob.musicplayer.util.AudioList;
 import com.goodjob.musicplayer.util.MediaUtils;
 
-import java.security.Permission;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ListActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST = 1;
 
-    public static final String LIST_RANDOM_ORDER_BOOL = "list_random";
-
-    private int mLastPlay = -1;
     private ListView listView;
     private ArrayAdapter adapter;
 
@@ -50,32 +45,16 @@ public class ListActivity extends AppCompatActivity {
 
     private BroadcastReceiver mEventReceiver;
 
-    List<AudioListItem> audioItemList;
+    private List<AudioListItem> audioItemList;
+    private List<Integer> mShuffleIndex;
+
+    private int mLastPlay = -1;
+    private int mLastIndex = -1;
 
     private boolean mIsPlaying = false;
-
-    private void init() {
-        List<Audio> audioList = AudioList.getAudioList(this);
-        audioItemList = new ArrayList<>();
-        for (Audio audio : audioList) {
-            audioItemList.add(new AudioListItem(audio));
-        }
-
-        listView = (ListView) findViewById(R.id.list_view);
-        adapter = new AudioListAdapter(this, R.layout.list_music, audioItemList);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                play(position);
-                Audio audio = audioItemList.get(position).getAudio();
-                Intent activityIntent = getAudioIntent(audio);
-                activityIntent.setClass(ListActivity.this, PlayerActivity.class);
-                //startActivity(activityIntent);
-                adapter.notifyDataSetChanged();
-            }
-        });
-    }
+    private boolean mIsShuffle = false;
+    private boolean mIsLoop = false;
+    private boolean mIsRepeat = false;
 
     private Intent getAudioIntent(Audio audio) {
         Intent intent = new Intent();
@@ -88,10 +67,25 @@ public class ListActivity extends AppCompatActivity {
         return intent;
     }
 
-    private void play(int position) {
-        AudioListItem item = audioItemList.get(position);
+    private void playAudio(int position) {
+        playAudio(position, false);
+    }
+
+    /**
+     *
+     * @param position 在原始音乐列表的位置
+     * @param shuffle  是否再次打乱顺序
+     */
+    private void playAudio(int position, boolean shuffle) {
         if (position != mLastPlay) {
+            AudioListItem item = audioItemList.get(position);
             Audio audio = item.getAudio();
+
+            if (shuffle) {
+                shuffleAudioIndex(mShuffleIndex, position);
+                mLastIndex = 0;
+            }
+
             Intent serviceIntent = getAudioIntent(audio);
             serviceIntent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PLAY_ACTION);
             serviceIntent.setClass(this, AudioPlayService.class);
@@ -110,6 +104,85 @@ public class ListActivity extends AppCompatActivity {
             startService(serviceIntent);
             mIsPlaying = true;
         }
+    }
+
+    /**
+     * 把indexList乱序后将值=playIndex的项交换到开头
+     * @param indexList
+     * @param playIndex
+     */
+    private void shuffleAudioIndex(List<Integer> indexList, int playIndex) {
+        Collections.shuffle(indexList);
+        for (int i = 0; i < indexList.size(); ++i) {
+            if (indexList.get(i) == playIndex) {
+                Collections.swap(indexList, i, 0);
+                break;
+            }
+        }
+        for (int i = 0; i < mShuffleIndex.size(); ++i) {
+            Log.d("list", mShuffleIndex.get(i) + "");
+        }
+    }
+
+    /**
+     * 歌曲切换
+     * @param next      是否为下一首
+     * @param fromUser  是否来自用户的动作
+     */
+    private void musicChange(boolean next, boolean fromUser) {
+        if (mIsShuffle) {
+            if (next) {
+                int index = mShuffleIndex.get(mLastIndex = (mLastIndex + 1) % mShuffleIndex.size());
+                Log.d("debug", mLastIndex + " " + mShuffleIndex.size());
+                if (!fromUser && mLastIndex == 0 && !mIsLoop) {
+
+                } else {
+                    playAudio(index);
+                }
+            } else {
+                int index = mShuffleIndex.get(mLastIndex = (mLastIndex - 1 + mShuffleIndex.size()) % mShuffleIndex.size());
+                playAudio(index);
+            }
+        } else {
+            if (next) {
+                if (!fromUser && mLastIndex == 0) {
+
+                } else {
+                    playAudio((mLastPlay + 1) % audioItemList.size());
+                }
+            } else {
+                playAudio((mLastPlay - 1 + audioItemList.size()) % audioItemList.size());
+            }
+        }
+    }
+
+    /**
+     * 初始化列表
+     */
+    private void init() {
+        List<Audio> audioList = AudioList.getAudioList(this);
+        audioItemList = new ArrayList<>();
+        mShuffleIndex = new ArrayList<>();
+        int index = 0;
+        for (Audio audio : audioList) {
+            audioItemList.add(new AudioListItem(audio));
+            mShuffleIndex.add(index++);
+        }
+
+        listView = (ListView) findViewById(R.id.list_view);
+        adapter = new AudioListAdapter(this, R.layout.list_music, audioItemList);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                playAudio(position, true);
+                Audio audio = audioItemList.get(position).getAudio();
+                Intent activityIntent = getAudioIntent(audio);
+                activityIntent.setClass(ListActivity.this, PlayerActivity.class);
+                //startActivity(activityIntent);
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     private void pause() {
@@ -133,6 +206,7 @@ public class ListActivity extends AppCompatActivity {
                     Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                     intent.setClass(ListActivity.this, PlayerActivity.class);
                     intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
+                    intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
                     startActivity(intent);
                     overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);
                 }
@@ -145,25 +219,31 @@ public class ListActivity extends AppCompatActivity {
                 String event = intent.getStringExtra(AudioPlayService.EVENT_KEY);
                 switch (event) {
                     case AudioPlayService.FINISHED_EVENT:
-                        play((mLastPlay + 1) % audioItemList.size());
+                        musicChange(true, false);
                         adapter.notifyDataSetChanged();
                         break;
                     case AudioPlayService.NEXT_EVENT:
-                        play((mLastPlay + 1) % audioItemList.size());
+                        musicChange(true, true);
                         adapter.notifyDataSetChanged();
                         break;
                     case AudioPlayService.PREVIOUS_EVENT:
-                        play((mLastPlay + audioItemList.size() - 1) % audioItemList.size());
+                        musicChange(false, true);
                         adapter.notifyDataSetChanged();
                         break;
-                    case AudioPlayService.PAUSE_ACTION:
+                    case AudioPlayService.PAUSE_EVENT:
                         mIsPlaying = false;
                         break;
-                    case AudioPlayService.REPLAY_ACTION:
+                    case AudioPlayService.REPLAY_EVENT:
                         mIsPlaying = true;
                         break;
+                    case AudioPlayService.LIST_ORDER_EVENT:
+                        mIsShuffle = intent.getBooleanExtra(AudioPlayService.LIST_ORDER_BOOL, true);
+                        if (mIsShuffle && mLastPlay != -1) {
+                            shuffleAudioIndex(mShuffleIndex, mLastPlay);
+                            mLastIndex = 0;
+                        }
+                        break;
                 }
-                Log.d("event", "get");
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_EVENT_FILTER));
 

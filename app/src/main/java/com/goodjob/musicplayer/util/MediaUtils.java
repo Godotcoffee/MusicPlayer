@@ -68,8 +68,6 @@ public class MediaUtils {
         return list;
     }
 
-    private static ObjectPool<BitmapDrawable> objPool = new ObjectPool<>(8);
-
     public static String getAlbumArt(Context context, int albumId) {
         String albumArt = null;
         Cursor cursor = context.getContentResolver().query(
@@ -115,13 +113,8 @@ public class MediaUtils {
         if (albumArt == null) {
             return null;
         }
-        BitmapDrawable drawable = objPool.get(albumArt);
-        if (drawable != null) {
-            return drawable;
-        }
         Bitmap bitmap = BitmapFactory.decodeFile(albumArt);
-        drawable = new BitmapDrawable(context.getResources(), bitmap);
-        objPool.put(albumArt,drawable);
+        BitmapDrawable drawable = new BitmapDrawable(context.getResources(), bitmap);
         return drawable;
     }
 }
