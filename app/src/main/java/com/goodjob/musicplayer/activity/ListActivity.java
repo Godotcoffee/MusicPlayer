@@ -29,12 +29,18 @@ import com.goodjob.musicplayer.service.AudioPlayService;
 import com.goodjob.musicplayer.util.AudioList;
 import com.goodjob.musicplayer.util.MediaUtils;
 
+import junit.framework.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class ListActivity extends AppCompatActivity {
-    private static final int PERMISSION_REQUEST = 1;
+    private static final int PERMISSION_REQUEST_CODE = 1;
+    private static String[] permissionArray = new String[] {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO,
+    };
 
     private ListView listView;
     private ArrayAdapter adapter;
@@ -177,9 +183,9 @@ public class ListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 playAudio(position, true);
                 Audio audio = audioItemList.get(position).getAudio();
-                Intent activityIntent = getAudioIntent(audio);
-                activityIntent.setClass(ListActivity.this, PlayerActivity.class);
-                //startActivity(activityIntent);
+                Intent activityIntent = new Intent();
+                activityIntent.setClass(ListActivity.this, TestActivity.class);
+                startActivity(activityIntent);
                 adapter.notifyDataSetChanged();
             }
         });
@@ -247,10 +253,18 @@ public class ListActivity extends AppCompatActivity {
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_EVENT_FILTER));
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PermissionChecker.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
-                    PERMISSION_REQUEST);
+        List<String> requestList = new ArrayList<>();
+
+        for (String permission : permissionArray) {
+            if (ActivityCompat.checkSelfPermission(this, permission)
+                    != PermissionChecker.PERMISSION_GRANTED) {
+                requestList.add(permission);
+            }
+        }
+
+        if (requestList.size() > 0) {
+            ActivityCompat.requestPermissions(this, requestList.toArray(new String[] {}),
+                    PERMISSION_REQUEST_CODE);
         } else {
             init();
         }
@@ -267,18 +281,24 @@ public class ListActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case PERMISSION_REQUEST:
-                if (grantResults[0] == PermissionChecker.PERMISSION_GRANTED) {
+            case PERMISSION_REQUEST_CODE:
+                boolean good = true;
+                for (int i = 0; i < permissions.length; ++i) {
+                    if (grantResults[i] != PermissionChecker.PERMISSION_GRANTED) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
+                        builder.setTitle("提示").setMessage("不允许读取SD卡权限则无法正常使用哦")
+                                .setPositiveButton("好的", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        ListActivity.super.finish();
+                                    }
+                                }).show();
+                        good = false;
+                        break;
+                    }
+                }
+                if (good) {
                     init();
-                } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
-                    builder.setTitle("提示").setMessage("不允许读取SD卡权限则无法正常使用哦")
-                            .setPositiveButton("好的", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    ListActivity.super.finish();
-                                }
-                            }).show();
                 }
                 break;
         }

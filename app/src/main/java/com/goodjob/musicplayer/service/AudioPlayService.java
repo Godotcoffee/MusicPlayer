@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -16,6 +17,7 @@ import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.activity.ListActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class AudioPlayService extends Service {
     /** Service发送当前播放状态广播的ACTION FILTER */
@@ -23,6 +25,8 @@ public class AudioPlayService extends Service {
 
     /** Service发送音乐播放事件广播的ACTION FILTER */
     public static final String BROADCAST_EVENT_FILTER = "AUDIO_PLAYER_EVENT";
+
+    public static final String BROADCAST_VISUALIZER_FILTER = "AUDIO_PLAYER_VISUALIZER";
 
     /** ACTION KEY */
     public static final String ACTION_KEY = "action";
@@ -129,8 +133,11 @@ public class AudioPlayService extends Service {
     /** MediaPlayer的同步锁 */
     private Object mLock = new Object();
 
-    /** 音乐播放 */
+    /** 音乐播放对象 */
     private MediaPlayer mMediaPlayer;
+
+    /** 频谱分析对象 */
+    private Visualizer mVisualizer;
 
     /** 是否有音乐在播放中 */
     private boolean mIsPlay;
@@ -218,6 +225,26 @@ public class AudioPlayService extends Service {
     public void onCreate() {
         Log.d("player-service", "create");
         mMediaPlayer = new MediaPlayer();
+        mVisualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
+        mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+        mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+            @Override
+            public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+            }
+
+            @Override
+            public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                Intent intent = new Intent(BROADCAST_VISUALIZER_FILTER);
+                ArrayList<Integer> list = new ArrayList<>(fft.length);
+                for (int i = 1; i < fft.length / 2; ++i) {
+                    list.add((int) Math.hypot(fft[2 * i], fft[2 * i + 1]));
+                }
+                intent.putIntegerArrayListExtra("test", list);
+                LocalBroadcastManager.getInstance(AudioPlayService.this).sendBroadcast(intent);
+            }
+        }, Visualizer.getMaxCaptureRate() >> 1, true, true);
+        mVisualizer.setEnabled(false);
+
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -267,6 +294,7 @@ public class AudioPlayService extends Service {
                         mMediaPlayer.prepare();
                         if (playNow)
                             mMediaPlayer.start();
+                        mVisualizer.setEnabled(true);
                     }
                     mIsPlay = true;
                     Log.d("player-service", "start");
@@ -324,6 +352,7 @@ public class AudioPlayService extends Service {
                 synchronized (mLock) {
                     mMediaPlayer.stop();
                 }
+                mVisualizer.setEnabled(false);
                 break;
             // 唤出播放器页面
             case ACTIVITY_ACTION:
