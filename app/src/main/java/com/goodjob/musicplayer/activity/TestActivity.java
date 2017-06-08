@@ -34,7 +34,7 @@ public class TestActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 ArrayList<Integer> list = intent.getIntegerArrayListExtra("test");
                 long end = System.currentTimeMillis();
-                if (end - start >= 15) {
+                if (end - start >= 10) {
                     view.updateData(list, intent.getIntExtra("rate", 0));
                     start = System.currentTimeMillis();
                 }

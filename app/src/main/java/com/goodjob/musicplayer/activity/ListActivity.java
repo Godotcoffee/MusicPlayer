@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -184,8 +185,7 @@ public class ListActivity extends AppCompatActivity {
                 playAudio(position, true);
                 Audio audio = audioItemList.get(position).getAudio();
                 Intent activityIntent = new Intent();
-                activityIntent.setClass(ListActivity.this, TestActivity.class);
-                startActivity(activityIntent);
+                //startActivity(activityIntent);
                 adapter.notifyDataSetChanged();
             }
         });
@@ -197,6 +197,7 @@ public class ListActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 

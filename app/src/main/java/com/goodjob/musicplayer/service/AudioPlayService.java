@@ -5,7 +5,9 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -127,6 +129,12 @@ public class AudioPlayService extends Service {
     /** 单曲循环 */
     public static final String ADUIO_REPEAT_BOOL = "audio_is_repeat";
 
+    /** 频谱列表 */
+    public static final String VISUALIZER_INT_LIST = "visualizer_list";
+
+    /***/
+    public static final String  VISUALIZER_SAMPLE_RATE_INT = "visualizer_sample";
+
     /** Notification的ID */
     private static final int NOTIFICATION_ID = 1;
 
@@ -138,6 +146,8 @@ public class AudioPlayService extends Service {
 
     /** 频谱分析对象 */
     private Visualizer mVisualizer;
+
+    private Equalizer mEqualizer;
 
     /** 是否有音乐在播放中 */
     private boolean mIsPlay;
@@ -189,7 +199,7 @@ public class AudioPlayService extends Service {
                     Intent intent = getAudioIntent();
                     intent.setAction(BROADCAST_PLAYING_FILTER);
                     lbm.sendBroadcast(intent);
-                    Thread.sleep(500);
+                    Thread.sleep(800);
                 }
             } catch (InterruptedException e) {
                 Log.d("player-service-thread", "interrupted");
@@ -221,11 +231,17 @@ public class AudioPlayService extends Service {
     public AudioPlayService() {
     }
 
+    private static final int SHARED_SESSION_ID = 233;
+
     @Override
     public void onCreate() {
         Log.d("player-service", "create");
         mMediaPlayer = new MediaPlayer();
-        mVisualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
+        int audioId = mMediaPlayer.getAudioSessionId();
+        mEqualizer = new Equalizer(0, audioId);
+        mEqualizer.setEnabled(true);
+
+        mVisualizer = new Visualizer(audioId);
         mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
         mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
             @Override
@@ -239,16 +255,17 @@ public class AudioPlayService extends Service {
                 for (int i = 0; i < fft.length; ++i) {
                     list.add((int) fft[i]);
                 }
-                intent.putIntegerArrayListExtra("test", list);
-                intent.putExtra("rate", samplingRate);
+                intent.putIntegerArrayListExtra(VISUALIZER_INT_LIST, list);
+                intent.putExtra(VISUALIZER_SAMPLE_RATE_INT, samplingRate);
                 LocalBroadcastManager.getInstance(AudioPlayService.this).sendBroadcast(intent);
             }
-        }, Visualizer.getMaxCaptureRate() >> 1, true, true);
+        }, mVisualizer.getMaxCaptureRate(), true, true);
         mVisualizer.setEnabled(false);
 
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+                mVisualizer.setEnabled(false);
                 sendAudioEvent(FINISHED_EVENT, null);
             }
         });
@@ -328,6 +345,7 @@ public class AudioPlayService extends Service {
                         synchronized (mLock) {
                             mMediaPlayer.pause();
                         }
+                        mVisualizer.setEnabled(false);
                         mIsPause = true;
                     }
                     sendAudioEvent(PAUSE_EVENT, null);
@@ -340,6 +358,7 @@ public class AudioPlayService extends Service {
                         synchronized (mLock) {
                             mMediaPlayer.start();
                         }
+                        mVisualizer.setEnabled(true);
                         mIsPause = false;
                     }
                     sendAudioEvent(REPLAY_EVENT, null);
@@ -390,6 +409,9 @@ public class AudioPlayService extends Service {
                 mMediaPlayer.stop();
                 mMediaPlayer.release();
             }
+        }
+        if (mVisualizer != null) {
+            mVisualizer.release();
         }
         Log.d("player-service", "destroy");
     }
