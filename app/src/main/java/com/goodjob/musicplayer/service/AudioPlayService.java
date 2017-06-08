@@ -236,10 +236,11 @@ public class AudioPlayService extends Service {
             public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
                 Intent intent = new Intent(BROADCAST_VISUALIZER_FILTER);
                 ArrayList<Integer> list = new ArrayList<>(fft.length);
-                for (int i = 1; i < fft.length / 2; ++i) {
-                    list.add((int) Math.hypot(fft[2 * i], fft[2 * i + 1]));
+                for (int i = 0; i < fft.length; ++i) {
+                    list.add((int) fft[i]);
                 }
                 intent.putIntegerArrayListExtra("test", list);
+                intent.putExtra("rate", samplingRate);
                 LocalBroadcastManager.getInstance(AudioPlayService.this).sendBroadcast(intent);
             }
         }, Visualizer.getMaxCaptureRate() >> 1, true, true);

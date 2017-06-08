@@ -18,6 +18,8 @@ import java.util.ArrayList;
 public class TestActivity extends AppCompatActivity {
     private BroadcastReceiver mReceiver;
 
+    private long start;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,12 +28,16 @@ public class TestActivity extends AppCompatActivity {
         final VisualizerView view = new VisualizerView(this);
         FrameLayout layout = (FrameLayout) findViewById(R.id.frame);
         layout.addView(view);
-
+        start = System.currentTimeMillis();
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 ArrayList<Integer> list = intent.getIntegerArrayListExtra("test");
-                view.updateData(list);
+                long end = System.currentTimeMillis();
+                if (end - start >= 15) {
+                    view.updateData(list, intent.getIntExtra("rate", 0));
+                    start = System.currentTimeMillis();
+                }
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_VISUALIZER_FILTER));
     }
