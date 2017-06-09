@@ -68,7 +68,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
      * @param bundle 包含音乐信息的bundle
      */
     private void updateUI(Bundle bundle, boolean isFirst) {
-        Log.d("updateUI", "123");
         synchronized (mLock) {
             String title = bundle.getString(AudioPlayService.AUDIO_TITLE_STR);
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
@@ -102,8 +101,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
             int duration = bundle.getInt(AudioPlayService.AUDIO_DURATION_INT, 0);
             int current = Math.min(bundle.getInt(AudioPlayService.AUDIO_CURRENT_INT, 0), duration);
-
-            Log.d("time", current + " " + duration);
 
             if (!onDrag) {
                 int min = 0, max = seekBar.getMax();
@@ -272,7 +269,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 frameLayout.removeAllViews();
                 if (mIsAlbum) {
                     mIsLastRunning = albumImageView.isRunning();
-                    Log.d("running", mIsLastRunning + "");
                     frameLayout.addView(visualizerView);
                 } else{
                     frameLayout.addView(albumImageView);
@@ -293,9 +289,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         LocalBroadcastManager.getInstance(this).registerReceiver(mPlayingReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d("updateUI", "333");
                 updateUI(intent.getExtras(), false);
-                Log.d("updateUI", "333e");
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_PLAYING_FILTER));
 
@@ -331,7 +325,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         switch (v.getId()) {
             case R.id.playPauseButton:
                 pauseMusic();
-                Log.d("pause", "push");
                 break;
             case R.id.nextButton:
                 nextMusic();

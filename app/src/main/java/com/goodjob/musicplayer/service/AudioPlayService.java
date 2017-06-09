@@ -283,7 +283,6 @@ public class AudioPlayService extends Service {
          *               pause 如果有播放的歌曲，切换暂停和播放
          *               stop 停止播放
          */
-        Log.d("player-service", "start1");
         String action = intent.getStringExtra(ACTION_KEY);
         if (action == null) {
             return START_NOT_STICKY;
@@ -310,7 +309,7 @@ public class AudioPlayService extends Service {
                             mMediaPlayer.start();
                     }
                     //if (!mVisualizer.getEnabled()) {
-                        mVisualizer.setEnabled(true);
+                        //mVisualizer.setEnabled(true);
                     //}
                     mIsPlay = true;
                     Log.d("player-service", "start");

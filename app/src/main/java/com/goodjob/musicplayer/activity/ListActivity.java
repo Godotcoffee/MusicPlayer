@@ -135,11 +135,8 @@ public class ListActivity extends AppCompatActivity {
      * @param fromUser  是否来自用户的动作
      */
     private void musicChange(boolean next, boolean fromUser) {
-        Log.d("fuck", fromUser + " " + (mLoopWay == AudioPlayService.AUDIO_REPEAT));
         if (mLoopWay == AudioPlayService.AUDIO_REPEAT && !fromUser) {
-            Log.d("d", "aaa");
             playAudio(mLastPlay, true, false, true);
-            Log.d("d", "aaa");
         } else {
             int index;
             if (mIsShuffle) {
@@ -163,7 +160,6 @@ public class ListActivity extends AppCompatActivity {
             }
             if (index >= 0) {
                 playAudio(index);
-                Log.d("last", mLastPlay + "");
             } else {
 
             }
@@ -216,7 +212,6 @@ public class ListActivity extends AppCompatActivity {
         barView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("fa", "fa");
                 if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
                     Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                     intent.setClass(ListActivity.this, PlayerActivity.class);
@@ -261,7 +256,6 @@ public class ListActivity extends AppCompatActivity {
                     case AudioPlayService.CHANEG_LOOP_EVENT:
                         mLoopWay = intent.getIntExtra(
                                 AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
-                        Log.d("loop", mLoopWay + "");
                         break;
                 }
             }
