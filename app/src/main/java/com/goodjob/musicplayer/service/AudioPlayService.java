@@ -231,8 +231,6 @@ public class AudioPlayService extends Service {
     public AudioPlayService() {
     }
 
-    private static final int SHARED_SESSION_ID = 233;
-
     @Override
     public void onCreate() {
         Log.d("player-service", "create");

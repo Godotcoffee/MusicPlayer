@@ -41,8 +41,6 @@ public class VisualizerView extends View {
 
     private int mSampleRate;
 
-    private AudioManager mAudioManager;
-
     public VisualizerView(Context context) {
         super(context);
         mRect = new Rect();
@@ -54,8 +52,6 @@ public class VisualizerView extends View {
         mBlockPaint.setAntiAlias(true);
 
         Arrays.fill(mLastHeight, -1);
-
-        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     }
 
     public void updateData(List<Integer> fft, int sampleRate) {
