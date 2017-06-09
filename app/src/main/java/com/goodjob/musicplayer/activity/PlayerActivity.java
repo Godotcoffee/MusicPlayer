@@ -68,6 +68,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
      * @param bundle 包含音乐信息的bundle
      */
     private void updateUI(Bundle bundle, boolean isFirst) {
+        Log.d("updateUI", "123");
         synchronized (mLock) {
             String title = bundle.getString(AudioPlayService.AUDIO_TITLE_STR);
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
@@ -99,8 +100,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 }
             }
 
-            int current = bundle.getInt(AudioPlayService.AUDIO_CURRENT_INT, 0);
             int duration = bundle.getInt(AudioPlayService.AUDIO_DURATION_INT, 0);
+            int current = Math.min(bundle.getInt(AudioPlayService.AUDIO_CURRENT_INT, 0), duration);
+
+            Log.d("time", current + " " + duration);
 
             if (!onDrag) {
                 int min = 0, max = seekBar.getMax();
@@ -187,10 +190,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             mLoopWay = AudioPlayService.LIST_NOT_LOOP;
         }
         intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
+        startService(intent);
         Toast.makeText(this, "切换到" + (mLoopWay == AudioPlayService.LIST_NOT_LOOP ?
                 "顺序播放" : (mLoopWay == AudioPlayService.LIST_LOOP ?
                 "循环播放" : "单曲循环")), Toast.LENGTH_SHORT).show();
-        startService(intent);
     }
 
     @Override
@@ -290,7 +293,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         LocalBroadcastManager.getInstance(this).registerReceiver(mPlayingReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.d("updateUI", "333");
                 updateUI(intent.getExtras(), false);
+                Log.d("updateUI", "333e");
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_PLAYING_FILTER));
 

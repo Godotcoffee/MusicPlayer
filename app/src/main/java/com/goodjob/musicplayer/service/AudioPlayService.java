@@ -229,11 +229,13 @@ public class AudioPlayService extends Service {
     public void onCreate() {
         Log.d("player-service", "create");
         mMediaPlayer = new MediaPlayer();
+        Log.d("id", mMediaPlayer.getAudioSessionId() + "");
         int audioId = mMediaPlayer.getAudioSessionId();
         mEqualizer = new Equalizer(0, audioId);
         mEqualizer.setEnabled(true);
 
         mVisualizer = new Visualizer(audioId);
+        mVisualizer.setEnabled(false);
         mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
         mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
             @Override
@@ -252,7 +254,6 @@ public class AudioPlayService extends Service {
                 LocalBroadcastManager.getInstance(AudioPlayService.this).sendBroadcast(intent);
             }
         }, mVisualizer.getMaxCaptureRate(), true, true);
-        mVisualizer.setEnabled(false);
 
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -282,6 +283,7 @@ public class AudioPlayService extends Service {
          *               pause 如果有播放的歌曲，切换暂停和播放
          *               stop 停止播放
          */
+        Log.d("player-service", "start1");
         String action = intent.getStringExtra(ACTION_KEY);
         if (action == null) {
             return START_NOT_STICKY;
@@ -306,13 +308,13 @@ public class AudioPlayService extends Service {
                         mMediaPlayer.prepare();
                         if (playNow)
                             mMediaPlayer.start();
-                        mVisualizer.setEnabled(true);
                     }
+                    //if (!mVisualizer.getEnabled()) {
+                        mVisualizer.setEnabled(true);
+                    //}
                     mIsPlay = true;
                     Log.d("player-service", "start");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IllegalStateException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 Intent notificationIntent = new Intent(this, AudioPlayService.class);
@@ -346,6 +348,7 @@ public class AudioPlayService extends Service {
                 }
                 Log.d("player-service", "pause");
                 break;
+            // 继续播放
             case REPLAY_ACTION:
                 if (mIsPlay) {
                     if (mIsPause) {

@@ -92,12 +92,12 @@ public class ListActivity extends AppCompatActivity {
 
             Intent serviceIntent = getAudioIntent(audio);
             serviceIntent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PLAY_ACTION);
-            serviceIntent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, start);
+            serviceIntent.putExtra(AudioPlayService.AUDIO_PLAY_NOW_BOOL, start);
             serviceIntent.setClass(this, AudioPlayService.class);
 
             item.setPlayStatus(AudioListItem.PLAYING);
 
-            if (mLastPlay != -1) {
+            if (mLastPlay != -1 && position != mLastPlay) {
                 ((AudioListItem) listView.getItemAtPosition(mLastPlay)).setPlayStatus(AudioListItem.DEFAULT);
             }
             mLastPlay = position;
@@ -135,8 +135,11 @@ public class ListActivity extends AppCompatActivity {
      * @param fromUser  是否来自用户的动作
      */
     private void musicChange(boolean next, boolean fromUser) {
+        Log.d("fuck", fromUser + " " + (mLoopWay == AudioPlayService.AUDIO_REPEAT));
         if (mLoopWay == AudioPlayService.AUDIO_REPEAT && !fromUser) {
-            playAudio(mLastIndex, true, false, true);
+            Log.d("d", "aaa");
+            playAudio(mLastPlay, true, false, true);
+            Log.d("d", "aaa");
         } else {
             int index;
             if (mIsShuffle) {
@@ -160,6 +163,7 @@ public class ListActivity extends AppCompatActivity {
             }
             if (index >= 0) {
                 playAudio(index);
+                Log.d("last", mLastPlay + "");
             } else {
 
             }
@@ -212,6 +216,7 @@ public class ListActivity extends AppCompatActivity {
         barView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("fa", "fa");
                 if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
                     Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                     intent.setClass(ListActivity.this, PlayerActivity.class);
