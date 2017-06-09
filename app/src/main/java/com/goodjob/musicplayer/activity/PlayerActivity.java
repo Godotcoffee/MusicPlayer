@@ -52,6 +52,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private boolean mIsShuffle;
     private boolean mIsPlay;
 
+    private int mLoopWay;
+
     private boolean mIsAlbum;
 
     private boolean mIsLastRunning;
@@ -73,6 +75,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             if (isFirst) {
                 mIsShuffle = bundle.getBoolean(AudioPlayService.LIST_ORDER_BOOL, false);
                 mIsPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
+                mLoopWay = bundle.getInt(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
                 if (mIsShuffle) {
                     Toast.makeText(this, "随机播放", Toast.LENGTH_SHORT).show();
                 } else {
@@ -173,6 +176,23 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         Toast.makeText(this, "切换到" + (mIsShuffle ? "随机播放" : "顺序播放"), Toast.LENGTH_SHORT).show();
     }
 
+    public void changeLoopWay() {
+        Intent intent = new Intent(this, AudioPlayService.class);
+        intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.CHANGE_LOOP_ACTION);
+        if (mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
+            mLoopWay = AudioPlayService.LIST_LOOP;
+        } else if (mLoopWay == AudioPlayService.LIST_LOOP) {
+            mLoopWay = AudioPlayService.AUDIO_REPEAT;
+        } else {
+            mLoopWay = AudioPlayService.LIST_NOT_LOOP;
+        }
+        intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
+        Toast.makeText(this, "切换到" + (mLoopWay == AudioPlayService.LIST_NOT_LOOP ?
+                "顺序播放" : (mLoopWay == AudioPlayService.LIST_LOOP ?
+                "循环播放" : "单曲循环")), Toast.LENGTH_SHORT).show();
+        startService(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -181,6 +201,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
         findViewById(R.id.shuffleButton).setOnClickListener(this);
+        findViewById(R.id.repeatButton).setOnClickListener(this);
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         currentTextView = (TextView) findViewById(R.id.current);
@@ -291,6 +312,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mPlayingReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mVisualizerReceiver);
     }
 
     @Override
@@ -314,6 +336,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.shuffleButton:
                 changeListOrder();
+                break;
+            case R.id.repeatButton:
+                changeLoopWay();
                 break;
         }
     }

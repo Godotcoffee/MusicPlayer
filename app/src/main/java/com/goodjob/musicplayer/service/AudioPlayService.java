@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
@@ -64,10 +63,7 @@ public class AudioPlayService extends Service {
     public static final String CHANGE_LIST_SHUFFLE_ACTION = "list_shuffle";
 
     /** 改变循环方式 */
-    public static final String CHANGE_LIST_LOOP_ACTION = "loop";
-
-    /** 改变单曲循环 */
-    public static final String CHANGE_AUDIO_REPEAT_ACTION = "repeat";
+    public static final String CHANGE_LOOP_ACTION = "loop_way";
 
     /** 播放完成事件 */
     public static final String FINISHED_EVENT = "finished";
@@ -87,11 +83,8 @@ public class AudioPlayService extends Service {
     /** 列表播放顺序改变 */
     public static final String LIST_ORDER_EVENT = "list_order_event";
 
-    /** 列表循环改变 */
-    public static final String LIST_LOOP_EVENT = "list_loop_event";
-
-    /** 单曲循环改变 */
-    public static final String AUDIO_LOOP_EVENT = "audio_loop_event";
+    /** 开启列表顺序播放 */
+    public static final String CHANEG_LOOP_EVENT = "change_loop_event";
 
     /** 音频标题属性 */
     public static final String AUDIO_TITLE_STR = "title";
@@ -123,11 +116,12 @@ public class AudioPlayService extends Service {
     /** 列表顺序 */
     public static final String LIST_ORDER_BOOL = "list_is_order";
 
-    /** 列表总体循环 */
-    public static final String LIST_LOOP_BOOL = "list_is_loop";
+    /** 循环方式 */
+    public static final String LOOP_WAY_INT = "loop_way";
 
-    /** 单曲循环 */
-    public static final String ADUIO_REPEAT_BOOL = "audio_is_repeat";
+    public static final int LIST_NOT_LOOP = 0;
+    public static final int LIST_LOOP = 1;
+    public static final int AUDIO_REPEAT = 2;
 
     /** 频谱列表 */
     public static final String VISUALIZER_INT_LIST = "visualizer_list";
@@ -289,7 +283,9 @@ public class AudioPlayService extends Service {
          *               stop 停止播放
          */
         String action = intent.getStringExtra(ACTION_KEY);
-
+        if (action == null) {
+            return START_NOT_STICKY;
+        }
         switch (action) {
             // 播放
             case PLAY_ACTION:
@@ -392,6 +388,10 @@ public class AudioPlayService extends Service {
             // 切换播放顺序
             case CHANGE_LIST_SHUFFLE_ACTION:
                 sendAudioEvent(LIST_ORDER_EVENT, intent.getExtras());
+                break;
+            // 切换循环方式
+            case CHANGE_LOOP_ACTION:
+                sendAudioEvent(CHANEG_LOOP_EVENT, intent.getExtras());
                 break;
         }
 
