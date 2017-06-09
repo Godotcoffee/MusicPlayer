@@ -6,9 +6,6 @@ import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.Shader;
-import android.media.AudioManager;
-import android.util.Log;
 import android.view.View;
 
 import java.util.Arrays;
@@ -21,7 +18,7 @@ import java.util.List;
 public class VisualizerView extends View {
     private List<Integer> mFFT;
     private Rect mRect;
-    private float points[] = new float[4];
+    private float mPoints[] = new float[4];
     private Paint mMainPaint = new Paint();
     private Paint mBlockPaint = new Paint();
 
@@ -110,12 +107,12 @@ public class VisualizerView extends View {
             float bottom = mRect.bottom;
             float top = mRect.height() - (float) (val * mRect.height() / 64.0);
 
-            points[0] = (right - left) / 2 + left;
-            points[1] = bottom;
-            points[2] = points[0];
-            points[3] = top;
+            mPoints[0] = (right - left) / 2 + left;
+            mPoints[1] = bottom;
+            mPoints[2] = mPoints[0];
+            mPoints[3] = top;
 
-            canvas.drawLines(points, mMainPaint);
+            canvas.drawLines(mPoints, mMainPaint);
             if (top < mLastHeight[i] || mLastHeight[i] < 0) {
                 mLastHeight[i] = top;
                 mLastCnt[i] = 0;
