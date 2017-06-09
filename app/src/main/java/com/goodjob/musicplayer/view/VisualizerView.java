@@ -34,6 +34,11 @@ public class VisualizerView extends View {
     private float[] mLastHeight = new float[SAMPLE_HZ.length];
     private int[] mLastCnt = new int[SAMPLE_HZ.length];
 
+    private int[] mColorGradient = new int [] {
+            Color.rgb(50, 15, 200), Color.rgb(50, 50, 200), Color.rgb(50, 50, 150),
+            Color.rgb(20, 15, 50), Color.rgb(20, 15, 50), Color.rgb(20, 15, 50)
+    };
+
     private int mSampleRate;
 
     private AudioManager mAudioManager;
@@ -42,7 +47,6 @@ public class VisualizerView extends View {
         super(context);
         mRect = new Rect();
 
-        //mMainPaint.setColor(Color.BLACK);
         mMainPaint.setStyle(Paint.Style.STROKE);
         mBlockPaint.setColor(Color.RED);
         mBlockPaint.setStyle(Paint.Style.STROKE);
@@ -97,25 +101,12 @@ public class VisualizerView extends View {
 
         float width = mRect.width() * 1.0f / SAMPLE_HZ.length;
         LinearGradient linearGradient = new LinearGradient(0, 0, 0, mRect.bottom,
-                new int [] {Color.rgb(50, 15, 200), Color.rgb(50, 50, 200), Color.rgb(50, 50, 150),
-                        Color.rgb(20, 15, 50), Color.rgb(20, 15, 50), Color.rgb(20, 15, 50)},
+                mColorGradient,
                 null, LinearGradient.TileMode.CLAMP);
-
-        int volume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        double adjust = 1.0;
-        if (volume == 2) {
-            adjust = 1.5;
-        } else if (volume == 1) {
-            adjust = 2;
-        }
 
         mMainPaint.setStrokeWidth(width / 2);
         mMainPaint.setShader(linearGradient);
         for (int i = 0; i < SAMPLE_HZ.length; ++i) {
-           // double sum = 0;
-            //for (int j = 0; j < partSize; ++j) {
-            //    sum += Math.hypot(mFFT.get((i * partSize + j + 1) << 1), mFFT.get((i * partSize + j + 1) << 1 | 1));
-            //}
             double val = getAverageFromFFT(mFFT, (int) Math.round(SAMPLE_HZ[i] * 1.0 / mSampleRate * mFFT.size()));
             val = 32 * Math.log10(val / 8);
             float left = i * width;
@@ -127,7 +118,6 @@ public class VisualizerView extends View {
             points[1] = bottom;
             points[2] = points[0];
             points[3] = top;
-
 
             canvas.drawLines(points, mMainPaint);
             if (top < mLastHeight[i] || mLastHeight[i] < 0) {
