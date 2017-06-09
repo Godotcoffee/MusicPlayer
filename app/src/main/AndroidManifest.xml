@@ -3,6 +3,7 @@
     package="com.goodjob.musicplayer">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -11,11 +12,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.ListActivity"
-            android:launchMode="singleTask"
-            android:label="@string/app_name">
+        <activity
+            android:name=".activity.ListActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -24,8 +27,10 @@
             android:name=".service.AudioPlayService"
             android:enabled="true" />
 
-        <activity android:name=".activity.PlayerActivity"
+        <activity
+            android:name=".activity.PlayerActivity"
             android:launchMode="singleTask" />
+        <activity android:name=".activity.TestActivity"></activity>
     </application>
 
 </manifest>

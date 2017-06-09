@@ -96,7 +96,7 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/album" />
 
-    <com.andremion.music.MusicCoverView
+    <FrameLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/album"
         android:layout_width="230dp"
@@ -110,9 +110,8 @@
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="123dp"
-        android:src="@drawable/no_album"
-        app:shape="circle"/>
+        android:layout_marginTop="131dp"
+        android:src="@drawable/no_album" />
 
     <LinearLayout
         android:id="@+id/toolbar"

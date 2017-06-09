@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -22,6 +24,9 @@ import com.andremion.music.MusicCoverView;
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.service.AudioPlayService;
 import com.goodjob.musicplayer.util.MediaUtils;
+import com.goodjob.musicplayer.view.VisualizerView;
+
+import java.util.ArrayList;
 
 public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private SeekBar seekBar;
@@ -30,6 +35,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private TextView titleTextView;
     private TextView artistTextView;
     private MusicCoverView albumImageView;
+    private VisualizerView visualizerView;
+    private FrameLayout frameLayout;
     private ImageButton pauseButton;
 
     private Object mLock = new Object();
@@ -43,7 +50,14 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private boolean mIsShuffle;
     private boolean mIsPlay;
 
+    private boolean mIsAlbum;
+
+    private boolean mIsLastRunning;
+
     private BroadcastReceiver mPlayingReceiver;
+    private BroadcastReceiver mVisualizerReceiver;
+
+    private long mStartTime;
 
     /**
      * UI更新
@@ -132,9 +146,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             mIsPlay = true;
         }
         if (albumImageView.isRunning()) {
-            albumImageView.stop();
+            if (mIsAlbum) {
+                albumImageView.stop();
+            }
         } else {
-            albumImageView.morph();
+            if (mIsAlbum) {
+                albumImageView.morph();
+            }
         }
         startService(intent);
     }
@@ -168,11 +186,17 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         durationTextView = (TextView) findViewById(R.id.duration);
         titleTextView = (TextView) findViewById(R.id.title);
         artistTextView = (TextView) findViewById(R.id.artist);
-        albumImageView = (MusicCoverView) findViewById(R.id.album);
+        frameLayout = (FrameLayout) findViewById(R.id.album);
         pauseButton = (ImageButton) findViewById(R.id.playPauseButton);
 
         pauseButton.setOnClickListener(this);
 
+        visualizerView = new VisualizerView(this);
+
+        mIsAlbum = true;
+        albumImageView = new MusicCoverView(this);
+        albumImageView.setShape(MusicCoverView.SHAPE_CIRCLE);
+        frameLayout.addView(albumImageView);
         //专辑封面旋转
         albumImageView.setCallbacks(new MusicCoverView.Callbacks() {
             @Override
@@ -225,17 +249,51 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
 
+        frameLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                frameLayout.removeAllViews();
+                if (mIsAlbum) {
+                    mIsLastRunning = albumImageView.isRunning();
+                    Log.d("running", mIsLastRunning + "");
+                    frameLayout.addView(visualizerView);
+                } else {
+                    frameLayout.addView(albumImageView);
+                    if (mIsPlay != mIsLastRunning) {
+                        if (mIsPlay) {
+                            albumImageView.morph();
+                            Log.d("start", "aa");
+                        } else {
+                            albumImageView.stop();
+                        }
+                    }
+
+                }
+                mIsAlbum = !mIsAlbum;
+            }
+        });
+
         updateUI(getIntent().getExtras(), true);
 
-        mPlayingReceiver = new BroadcastReceiver() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(mPlayingReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 updateUI(intent.getExtras(), false);
             }
-        };
+        }, new IntentFilter(AudioPlayService.BROADCAST_PLAYING_FILTER));
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mPlayingReceiver,
-                new IntentFilter(AudioPlayService.BROADCAST_PLAYING_FILTER));
+        mStartTime = System.currentTimeMillis();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mVisualizerReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ArrayList<Integer> list = intent.getIntegerArrayListExtra(AudioPlayService.VISUALIZER_INT_LIST);
+                long end = System.currentTimeMillis();
+                if (end - mStartTime >= 10) {
+                    visualizerView.updateData(list, intent.getIntExtra(AudioPlayService.VISUALIZER_SAMPLE_RATE_INT, 0));
+                    mStartTime = System.currentTimeMillis();
+                }
+            }
+        }, new IntentFilter(AudioPlayService.BROADCAST_VISUALIZER_FILTER));
     }
 
     @Override

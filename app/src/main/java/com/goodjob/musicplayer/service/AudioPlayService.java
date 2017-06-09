@@ -5,7 +5,10 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.audiofx.Equalizer;
+import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -16,6 +19,7 @@ import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.activity.ListActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class AudioPlayService extends Service {
     /** Service发送当前播放状态广播的ACTION FILTER */
@@ -23,6 +27,8 @@ public class AudioPlayService extends Service {
 
     /** Service发送音乐播放事件广播的ACTION FILTER */
     public static final String BROADCAST_EVENT_FILTER = "AUDIO_PLAYER_EVENT";
+
+    public static final String BROADCAST_VISUALIZER_FILTER = "AUDIO_PLAYER_VISUALIZER";
 
     /** ACTION KEY */
     public static final String ACTION_KEY = "action";
@@ -123,14 +129,25 @@ public class AudioPlayService extends Service {
     /** 单曲循环 */
     public static final String ADUIO_REPEAT_BOOL = "audio_is_repeat";
 
+    /** 频谱列表 */
+    public static final String VISUALIZER_INT_LIST = "visualizer_list";
+
+    /***/
+    public static final String  VISUALIZER_SAMPLE_RATE_INT = "visualizer_sample";
+
     /** Notification的ID */
     private static final int NOTIFICATION_ID = 1;
 
     /** MediaPlayer的同步锁 */
     private Object mLock = new Object();
 
-    /** 音乐播放 */
+    /** 音乐播放对象 */
     private MediaPlayer mMediaPlayer;
+
+    /** 频谱分析对象 */
+    private Visualizer mVisualizer;
+
+    private Equalizer mEqualizer;
 
     /** 是否有音乐在播放中 */
     private boolean mIsPlay;
@@ -182,7 +199,7 @@ public class AudioPlayService extends Service {
                     Intent intent = getAudioIntent();
                     intent.setAction(BROADCAST_PLAYING_FILTER);
                     lbm.sendBroadcast(intent);
-                    Thread.sleep(500);
+                    Thread.sleep(800);
                 }
             } catch (InterruptedException e) {
                 Log.d("player-service-thread", "interrupted");
@@ -214,13 +231,41 @@ public class AudioPlayService extends Service {
     public AudioPlayService() {
     }
 
+    private static final int SHARED_SESSION_ID = 233;
+
     @Override
     public void onCreate() {
         Log.d("player-service", "create");
         mMediaPlayer = new MediaPlayer();
+        int audioId = mMediaPlayer.getAudioSessionId();
+        mEqualizer = new Equalizer(0, audioId);
+        mEqualizer.setEnabled(true);
+
+        mVisualizer = new Visualizer(audioId);
+        mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+        mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+            @Override
+            public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+            }
+
+            @Override
+            public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                Intent intent = new Intent(BROADCAST_VISUALIZER_FILTER);
+                ArrayList<Integer> list = new ArrayList<>(fft.length);
+                for (int i = 0; i < fft.length; ++i) {
+                    list.add((int) fft[i]);
+                }
+                intent.putIntegerArrayListExtra(VISUALIZER_INT_LIST, list);
+                intent.putExtra(VISUALIZER_SAMPLE_RATE_INT, samplingRate);
+                LocalBroadcastManager.getInstance(AudioPlayService.this).sendBroadcast(intent);
+            }
+        }, mVisualizer.getMaxCaptureRate(), true, true);
+        mVisualizer.setEnabled(false);
+
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+                mVisualizer.setEnabled(false);
                 sendAudioEvent(FINISHED_EVENT, null);
             }
         });
@@ -267,6 +312,7 @@ public class AudioPlayService extends Service {
                         mMediaPlayer.prepare();
                         if (playNow)
                             mMediaPlayer.start();
+                        mVisualizer.setEnabled(true);
                     }
                     mIsPlay = true;
                     Log.d("player-service", "start");
@@ -299,6 +345,7 @@ public class AudioPlayService extends Service {
                         synchronized (mLock) {
                             mMediaPlayer.pause();
                         }
+                        mVisualizer.setEnabled(false);
                         mIsPause = true;
                     }
                     sendAudioEvent(PAUSE_EVENT, null);
@@ -311,6 +358,7 @@ public class AudioPlayService extends Service {
                         synchronized (mLock) {
                             mMediaPlayer.start();
                         }
+                        mVisualizer.setEnabled(true);
                         mIsPause = false;
                     }
                     sendAudioEvent(REPLAY_EVENT, null);
@@ -324,6 +372,7 @@ public class AudioPlayService extends Service {
                 synchronized (mLock) {
                     mMediaPlayer.stop();
                 }
+                mVisualizer.setEnabled(false);
                 break;
             // 唤出播放器页面
             case ACTIVITY_ACTION:
@@ -360,6 +409,9 @@ public class AudioPlayService extends Service {
                 mMediaPlayer.stop();
                 mMediaPlayer.release();
             }
+        }
+        if (mVisualizer != null) {
+            mVisualizer.release();
         }
         Log.d("player-service", "destroy");
     }
