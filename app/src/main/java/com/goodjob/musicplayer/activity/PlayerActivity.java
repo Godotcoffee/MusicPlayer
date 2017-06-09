@@ -86,7 +86,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             if (mTitle == null || !mTitle.equals(title)) {
                 titleTextView.setText(mTitle = title);
             }
-            if (mArtist == null || !mTitle.equals(artist)) {
+            if (mArtist == null || !mArtist.equals(artist)) {
                 artistTextView.setText(mArtist = artist);
             }
             if (mAlbumId != albumId) {
@@ -211,6 +211,11 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         frameLayout = (FrameLayout) findViewById(R.id.album);
         pauseButton = (ImageButton) findViewById(R.id.playPauseButton);
         lyricView = (LyricView) findViewById(R.id.lyric_view);
+
+        titleTextView.setHorizontallyScrolling(true);
+        titleTextView.setSelected(true);
+        artistTextView.setHorizontallyScrolling(true);
+        artistTextView.setSelected(true);
 
         pauseButton.setOnClickListener(this);
 

@@ -309,7 +309,7 @@ public class AudioPlayService extends Service {
                             mMediaPlayer.start();
                     }
                     //if (!mVisualizer.getEnabled()) {
-                        //mVisualizer.setEnabled(true);
+                        mVisualizer.setEnabled(true);
                     //}
                     mIsPlay = true;
                     Log.d("player-service", "start");

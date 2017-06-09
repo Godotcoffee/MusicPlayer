@@ -103,7 +103,9 @@ public class ListActivity extends AppCompatActivity {
             mLastPlay = position;
 
             mBarTitle.setText(audio.getTitle());
+
             mBarArtist.setText(audio.getArtist());
+
             mBarAlbum.setImageDrawable(MediaUtils.getAlbumBitmapDrawable(this, audio));
 
             startService(serviceIntent);
@@ -185,6 +187,7 @@ public class ListActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("click", "abc");
                 playAudio(position, true, true, false);
                 Audio audio = audioItemList.get(position).getAudio();
                 Intent activityIntent = new Intent();
@@ -208,6 +211,11 @@ public class ListActivity extends AppCompatActivity {
         mBarTitle = (TextView) barView.findViewById(R.id.title);
         mBarArtist = (TextView) barView.findViewById(R.id.artist);
         mBarAlbum = (ImageView) barView.findViewById(R.id.album);
+
+        mBarTitle.setHorizontallyScrolling(true);
+        mBarTitle.setSelected(true);
+        mBarArtist.setHorizontallyScrolling(true);
+        mBarArtist.setSelected(true);
 
         barView.setOnClickListener(new View.OnClickListener() {
             @Override

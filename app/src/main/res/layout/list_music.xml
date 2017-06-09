@@ -12,7 +12,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:maxLines="1"
-        android:ellipsize="end"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
         android:textSize="25sp"
         android:text="Title"
         android:layout_alignParentTop="true"
@@ -38,7 +39,8 @@
         android:layout_toLeftOf="@+id/duration"
         android:paddingLeft="5dp"
         android:maxLines="1"
-        android:ellipsize="end"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
         android:textSize="15sp"
         android:text="Artist"/>
 
