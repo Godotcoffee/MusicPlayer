@@ -18,7 +18,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="69dp"
         app:layout_constraintTop_toBottomOf="@+id/album" />
 
     <TextView
@@ -29,14 +29,15 @@
         android:layout_marginStart="30dp"
         app:layout_constraintRight_toLeftOf="@+id/seekBar"
         android:layout_marginRight="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginLeft="30dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintHorizontal_bias="0.38"
         app:layout_constraintTop_toTopOf="@+id/seekBar"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/seekBar"
         android:layout_marginBottom="8dp"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="1.0"
+        android:layout_marginEnd="8dp" />
 
     <TextView
         android:id="@+id/duration"
@@ -48,11 +49,12 @@
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/seekBar"
         android:layout_marginBottom="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginRight="32dp"
         app:layout_constraintVertical_bias="1.0"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/seekBar"
-        android:layout_marginLeft="8dp" />
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp" />
 
     <TextView
         android:id="@+id/title"
@@ -74,7 +76,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/album"
-        app:layout_constraintVertical_bias="0.176" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/artist"
@@ -94,24 +96,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/album" />
-
-    <FrameLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/album"
-        android:layout_width="230dp"
-        android:layout_height="230dp"
-        android:scaleType="fitCenter"
-        app:srcCompat="@android:color/background_light"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="131dp"
-        android:src="@drawable/no_album" />
+        app:layout_constraintBottom_toTopOf="@+id/album"
+        app:layout_constraintVertical_bias="0.0" />
 
     <LinearLayout
         android:id="@+id/toolbar"
@@ -128,7 +114,8 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/seekBar"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintVertical_bias="0.0"
+        android:layout_marginEnd="8dp">
 
         <ImageButton
             android:id="@+id/shuffleButton"
@@ -197,4 +184,35 @@
             android:scaleType="centerInside"
             android:src="@drawable/repeat" />
     </LinearLayout>
+
+    <me.zhengken.lyricview.LyricView
+        android:id="@+id/lyric_view"
+        android:layout_width="325dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="-119dp"
+        app:layout_constraintTop_toBottomOf="@+id/album"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/seekBar"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.513" />
+
+    <FrameLayout
+        android:id="@+id/album"
+        android:layout_width="230dp"
+        android:layout_height="230dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="96dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/no_album"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:color/background_light" />
 </android.support.constraint.ConstraintLayout>

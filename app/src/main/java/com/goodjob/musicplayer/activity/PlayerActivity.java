@@ -5,10 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -26,7 +24,10 @@ import com.goodjob.musicplayer.service.AudioPlayService;
 import com.goodjob.musicplayer.util.MediaUtils;
 import com.goodjob.musicplayer.view.VisualizerView;
 
+import java.io.File;
 import java.util.ArrayList;
+
+import me.zhengken.lyricview.LyricView;
 
 public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private SeekBar seekBar;
@@ -38,6 +39,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private VisualizerView visualizerView;
     private FrameLayout frameLayout;
     private ImageButton pauseButton;
+    private LyricView lyricView;
 
     private Object mLock = new Object();
 
@@ -104,6 +106,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     pos = (int) ((current * 1.0 / duration) * (max - min));
                 }
                 seekBar.setProgress(pos);
+                lyricView.setCurrentTimeMillis(current);
             }
 
             int totalSecond = current / 1000;
@@ -150,9 +153,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 albumImageView.stop();
             }
         } else {
-            if (mIsAlbum) {
-                albumImageView.morph();
-            }
+            albumImageView.start();
         }
         startService(intent);
     }
@@ -188,6 +189,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         artistTextView = (TextView) findViewById(R.id.artist);
         frameLayout = (FrameLayout) findViewById(R.id.album);
         pauseButton = (ImageButton) findViewById(R.id.playPauseButton);
+        lyricView = (LyricView) findViewById(R.id.lyric_view);
 
         pauseButton.setOnClickListener(this);
 
@@ -197,22 +199,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         albumImageView = new MusicCoverView(this);
         albumImageView.setShape(MusicCoverView.SHAPE_CIRCLE);
         frameLayout.addView(albumImageView);
+
         //专辑封面旋转
-        albumImageView.setCallbacks(new MusicCoverView.Callbacks() {
-            @Override
-            public void onMorphEnd(MusicCoverView coverView) {
-                if (MusicCoverView.SHAPE_CIRCLE == coverView.getShape()) {
-                    coverView.start();
-                }
-            }
-
-            @Override
-            public void onRotateEnd(MusicCoverView coverView) {
-                coverView.morph();
-            }
-        });
-
         albumImageView.start();
+
+        File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
+        File saveFile = new File(sdCardDir, "GARNiDELiA.lrc");
+        lyricView.setLyricFile(saveFile);
 
         // 进度条事件
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -257,17 +250,15 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     mIsLastRunning = albumImageView.isRunning();
                     Log.d("running", mIsLastRunning + "");
                     frameLayout.addView(visualizerView);
-                } else {
+                } else{
                     frameLayout.addView(albumImageView);
                     if (mIsPlay != mIsLastRunning) {
                         if (mIsPlay) {
-                            albumImageView.morph();
-                            Log.d("start", "aa");
+                            albumImageView.start();
                         } else {
                             albumImageView.stop();
                         }
                     }
-
                 }
                 mIsAlbum = !mIsAlbum;
             }
