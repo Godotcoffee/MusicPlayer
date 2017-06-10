@@ -305,8 +305,10 @@ public class AudioPlayService extends Service {
                         mMediaPlayer.reset();
                         mMediaPlayer.setDataSource(path);
                         mMediaPlayer.prepare();
-                        if (playNow)
+                        if (playNow) {
                             mMediaPlayer.start();
+                        }
+                        mIsPause = !playNow;
                     }
                     //if (!mVisualizer.getEnabled()) {
                         mVisualizer.setEnabled(true);

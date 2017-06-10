@@ -72,9 +72,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             String title = bundle.getString(AudioPlayService.AUDIO_TITLE_STR);
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
             int albumId = bundle.getInt(AudioPlayService.AUDIO_ALBUM_ID_INT, -1);
+            mIsPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
             if (isFirst) {
                 mIsShuffle = bundle.getBoolean(AudioPlayService.LIST_ORDER_BOOL, false);
-                mIsPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
                 mLoopWay = bundle.getInt(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
                 if (mIsShuffle) {
                     Toast.makeText(this, "随机播放", Toast.LENGTH_SHORT).show();
@@ -99,6 +99,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 }
             }
 
+            if (mIsPlay != albumImageView.isRunning()) {
+               if (mIsPlay) {
+                   albumImageView.start();
+               } else {
+                   albumImageView.stop();
+               }
+            }
             int duration = bundle.getInt(AudioPlayService.AUDIO_DURATION_INT, 0);
             int current = Math.min(bundle.getInt(AudioPlayService.AUDIO_CURRENT_INT, 0), duration);
 
@@ -144,6 +151,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     // 切换暂停
     private void pauseMusic() {
         Intent intent = new Intent(this, AudioPlayService.class);
+        //Log.d("isplay", mIsPlay + "");
         if (mIsPlay) {
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PAUSE_ACTION);
             mIsPlay = false;
@@ -153,10 +161,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         }
         if (albumImageView.isRunning()) {
             if (mIsAlbum) {
-                albumImageView.stop();
+                //albumImageView.stop();
             }
         } else {
-            albumImageView.start();
+            //albumImageView.start();
         }
         startService(intent);
     }
@@ -227,7 +235,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         frameLayout.addView(albumImageView);
 
         //专辑封面旋转
-        albumImageView.start();
+        //albumImageView.start();
 
         File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
         File saveFile = new File(sdCardDir, "GARNiDELiA.lrc");
@@ -279,9 +287,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     frameLayout.addView(albumImageView);
                     if (mIsPlay != mIsLastRunning) {
                         if (mIsPlay) {
-                            albumImageView.start();
+                            //albumImageView.start();
                         } else {
-                            albumImageView.stop();
+                            //albumImageView.stop();
                         }
                     }
                 }

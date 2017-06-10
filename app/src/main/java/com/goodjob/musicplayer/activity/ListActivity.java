@@ -152,7 +152,6 @@ public class ListActivity extends AppCompatActivity {
             } else {
                 if (next) {
                     index = (mLastPlay + 1) % audioItemList.size();
-
                 } else {
                     index = (mLastPlay - 1 + audioItemList.size()) % audioItemList.size();
                 }
@@ -161,9 +160,10 @@ public class ListActivity extends AppCompatActivity {
                 index = -1;
             }
             if (index >= 0) {
-                playAudio(index);
+                playAudio(index, mIsPlaying, mIsShuffle, true);
             } else {
-
+                playAudio(0, false, mIsShuffle, true);
+                mIsPlaying = false;
             }
         }
     }
@@ -224,6 +224,7 @@ public class ListActivity extends AppCompatActivity {
                     Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                     intent.setClass(ListActivity.this, PlayerActivity.class);
                     intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
+                    Log.d("bool", mIsPlaying + "");
                     intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
                     startActivity(intent);
                     overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);
