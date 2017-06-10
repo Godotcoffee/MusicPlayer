@@ -3,47 +3,100 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
-    android:background="@drawable/now_playing_controls_background_light">
+    android:background="@color/colorPrimary">
 
-    <ImageView
-        android:id="@+id/album"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:scaleType="fitCenter"/>
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
+    <RelativeLayout
+        android:id="@+id/home_titlebar"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/album"
-        android:maxLines="1"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:scrollHorizontally="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:textSize="28sp"
-        android:text="Title"/>
+        android:orientation="horizontal"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/linearLayout">
+        <ImageView
+            android:id="@+id/album"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="fitCenter"/>
 
-    <TextView
-        android:id="@+id/artist"
-        android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/album"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:textSize="28sp"
+            android:text="Title"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:id="@+id/artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/album"
+            android:layout_below="@+id/title"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:textSize="18sp"
+            android:text="Artist"
+            android:textColor="@color/white"/>
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/album"
-        android:layout_below="@+id/title"
-        android:maxLines="1"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:scrollHorizontally="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:textSize="18sp"
-        android:text="Artist"/>
+        android:id="@+id/linearLayout"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="6dp">
 
-    <Button
-        android:id="@+id/playBtn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_alignParentEnd="true"/>
+        <RelativeLayout
+            android:id="@+id/homebar_ackground"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center"
+
+
+            android:background="@drawable/shadowed_circle_red"
+            android:clickable="false">
+
+            <ImageButton
+                android:id="@+id/home_pauseButton"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_centerInParent="true"
+                android:adjustViewBounds="true"
+                android:background="#00000000"
+                android:scaleType="centerInside"
+                android:src="@drawable/pause_light"
+                android:visibility="visible" />
+
+        </RelativeLayout>
+
+        <ImageButton
+            android:id="@+id/home_nextButton"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:alpha="0.9"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/skip_next"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/homebar_ackground"
+            android:layout_marginEnd="4dp"/>
+    </RelativeLayout>
+
+
 
 </RelativeLayout>

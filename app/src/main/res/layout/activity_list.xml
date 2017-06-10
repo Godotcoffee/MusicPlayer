@@ -5,16 +5,22 @@
     android:layout_height="match_parent"
     android:background="@drawable/now_playing_controls_background_light">
 
+    <include layout="@layout/title_home"
+        android:id="@+id/title_home">
+
+    </include>
+
     <ListView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/linear_layout"/>
+        android:layout_above="@+id/linear_layout"
+        android:layout_below="@id/title_home"/>
 
     <LinearLayout
         android:id="@+id/linear_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_alignParentBottom="true">
         <include
             android:id="@+id/bar"

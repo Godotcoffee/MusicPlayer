@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -39,6 +38,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private VisualizerView visualizerView;
     private FrameLayout frameLayout;
     private ImageButton pauseButton;
+    private ImageButton repeatButton;
+    private ImageButton shuffleButton;
+    private ImageButton returnButton;
     private LyricView lyricView;
 
     private Object mLock = new Object();
@@ -72,14 +74,16 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             String title = bundle.getString(AudioPlayService.AUDIO_TITLE_STR);
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
             int albumId = bundle.getInt(AudioPlayService.AUDIO_ALBUM_ID_INT, -1);
-            mIsPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
+            boolean isPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
             if (isFirst) {
                 mIsShuffle = bundle.getBoolean(AudioPlayService.LIST_ORDER_BOOL, false);
                 mLoopWay = bundle.getInt(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
                 if (mIsShuffle) {
                     Toast.makeText(this, "随机播放", Toast.LENGTH_SHORT).show();
+                    shuffleButton.setImageResource(R.drawable.btn_playback_shuffle_all);
                 } else {
                     Toast.makeText(this, "顺序播放", Toast.LENGTH_SHORT).show();
+                    shuffleButton.setImageResource(R.drawable.shuffle);
                 }
             }
 
@@ -97,15 +101,23 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 } else {
                     albumImageView.setImageResource(R.drawable.no_album);
                 }
+            };
+            if (isPlay != mIsPlay) {
+                if (isPlay) {
+                    pauseButton.setImageResource(R.drawable.pause_light);
+                } else {
+                    pauseButton.setImageResource(R.drawable.play_light);
+                }
             }
 
-            if (mIsPlay != albumImageView.isRunning()) {
-               if (mIsPlay) {
+            if (isPlay != albumImageView.isRunning()) {
+               if (isPlay) {
                    albumImageView.start();
                } else {
                    albumImageView.stop();
                }
             }
+            mIsPlay = isPlay;
             int duration = bundle.getInt(AudioPlayService.AUDIO_DURATION_INT, 0);
             int current = Math.min(bundle.getInt(AudioPlayService.AUDIO_CURRENT_INT, 0), duration);
 
@@ -154,10 +166,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         //Log.d("isplay", mIsPlay + "");
         if (mIsPlay) {
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PAUSE_ACTION);
-            mIsPlay = false;
+            //mIsPlay = false;
+            pauseButton.setImageResource(R.drawable.pause_light);
         } else {
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.REPLAY_ACTION);
-            mIsPlay = true;
+            //mIsPlay = true;
+            pauseButton.setImageResource(R.drawable.play_light);
         }
         if (albumImageView.isRunning()) {
             if (mIsAlbum) {
@@ -182,6 +196,11 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle = !mIsShuffle);
         startService(intent);
         Toast.makeText(this, "切换到" + (mIsShuffle ? "随机播放" : "顺序播放"), Toast.LENGTH_SHORT).show();
+        if (mIsShuffle) {
+            shuffleButton.setImageResource(R.drawable.btn_playback_shuffle_all);
+        } else {
+            shuffleButton.setImageResource(R.drawable.shuffle);
+        }
     }
 
     public void changeLoopWay() {
@@ -189,10 +208,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.CHANGE_LOOP_ACTION);
         if (mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
             mLoopWay = AudioPlayService.LIST_LOOP;
+            repeatButton.setImageResource(R.drawable.btn_playback_repeat_all);
         } else if (mLoopWay == AudioPlayService.LIST_LOOP) {
             mLoopWay = AudioPlayService.AUDIO_REPEAT;
+            repeatButton.setImageResource(R.drawable.btn_playback_repeat_one);
         } else {
             mLoopWay = AudioPlayService.LIST_NOT_LOOP;
+            repeatButton.setImageResource(R.drawable.repeat);
         }
         intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
         startService(intent);
@@ -208,8 +230,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
-        findViewById(R.id.shuffleButton).setOnClickListener(this);
-        findViewById(R.id.repeatButton).setOnClickListener(this);
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         currentTextView = (TextView) findViewById(R.id.current);
@@ -218,6 +238,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         artistTextView = (TextView) findViewById(R.id.artist);
         frameLayout = (FrameLayout) findViewById(R.id.album);
         pauseButton = (ImageButton) findViewById(R.id.playPauseButton);
+        repeatButton = (ImageButton) findViewById(R.id.repeatButton);
+        shuffleButton = (ImageButton) findViewById(R.id.shuffleButton);
+        returnButton = (ImageButton) findViewById(R.id.returnButton);
         lyricView = (LyricView) findViewById(R.id.lyric_view);
 
         titleTextView.setHorizontallyScrolling(true);
@@ -226,7 +249,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         artistTextView.setSelected(true);
 
         pauseButton.setOnClickListener(this);
-
+        repeatButton.setOnClickListener(this);
+        shuffleButton.setOnClickListener(this);
+        returnButton.setOnClickListener(this);
         visualizerView = new VisualizerView(this);
 
         mIsAlbum = true;
@@ -350,6 +375,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.repeatButton:
                 changeLoopWay();
+                break;
+            case R.id.returnButton:
+                finish();
+                overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_bottom);
                 break;
         }
     }
