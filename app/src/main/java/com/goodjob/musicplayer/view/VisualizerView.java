@@ -22,10 +22,10 @@ public class VisualizerView extends View {
     private Paint mMainPaint = new Paint();
     private Paint mBlockPaint = new Paint();
 
-    private int mBlockWidth = 5;
+    private int mBlockWidth = 4;
 
     private static final int[] SAMPLE_HZ = new int []{
-            0, 50, 69, 94, 129, 176, 241, 331, 453, 620, 850, 1200, 1600, 2200, 3000, 4100, 5600, 7700, 11000, 14000, 21000
+            0, 50, 94, 129, 176, 241, 331, 453, 620, 850, 1100, 1400, 1600, 2100, 3000, 4100, 6000, 8000, 11000, 15000, 19000
     };
 
     private float[] mLastHeight = new float[SAMPLE_HZ.length];
@@ -53,7 +53,7 @@ public class VisualizerView extends View {
 
     public void updateData(List<Integer> fft, int sampleRate) {
         mFFT = fft;
-        mSampleRate = sampleRate / 2000;
+        mSampleRate = sampleRate / 1000;
         invalidate();
     }
 

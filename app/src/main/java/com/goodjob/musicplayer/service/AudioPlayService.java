@@ -65,6 +65,9 @@ public class AudioPlayService extends Service {
     /** 改变循环方式 */
     public static final String CHANGE_LOOP_ACTION = "loop_way";
 
+    /** 开始播放事件 */
+    public static final String PLAY_EVENT = "play_event";
+
     /** 播放完成事件 */
     public static final String FINISHED_EVENT = "finished";
 
@@ -235,7 +238,6 @@ public class AudioPlayService extends Service {
         mEqualizer.setEnabled(true);
 
         mVisualizer = new Visualizer(audioId);
-        mVisualizer.setEnabled(false);
         mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
         mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
             @Override
@@ -244,6 +246,9 @@ public class AudioPlayService extends Service {
 
             @Override
             public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                if (!mIsPlay || mIsPause) {
+                    return;
+                }
                 Intent intent = new Intent(BROADCAST_VISUALIZER_FILTER);
                 ArrayList<Integer> list = new ArrayList<>(fft.length);
                 for (int i = 0; i < fft.length; ++i) {
@@ -254,11 +259,12 @@ public class AudioPlayService extends Service {
                 LocalBroadcastManager.getInstance(AudioPlayService.this).sendBroadcast(intent);
             }
         }, mVisualizer.getMaxCaptureRate(), true, true);
+        mVisualizer.setEnabled(true);
 
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mVisualizer.setEnabled(false);
+                //mVisualizer.setEnabled(false);
                 sendAudioEvent(FINISHED_EVENT, null);
             }
         });
@@ -310,8 +316,9 @@ public class AudioPlayService extends Service {
                         }
                         mIsPause = !playNow;
                     }
+
                     //if (!mVisualizer.getEnabled()) {
-                        mVisualizer.setEnabled(true);
+                    //mVisualizer.setEnabled(true);
                     //}
                     mIsPlay = true;
                     Log.d("player-service", "start");
@@ -334,6 +341,10 @@ public class AudioPlayService extends Service {
                 //notification.flags = Notification.FLAG_ONGOING_EVENT;
                 startForeground(NOTIFICATION_ID, notification);
                 //mNotificationManager.notify(NOTIFICATION_ID, notification);
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(AudioPlayService.AUDIO_PLAY_NOW_BOOL, playNow);
+                sendAudioEvent(PLAY_EVENT, bundle);
+
                 break;
             // 暂停
             case PAUSE_ACTION:
@@ -342,7 +353,7 @@ public class AudioPlayService extends Service {
                         synchronized (mLock) {
                             mMediaPlayer.pause();
                         }
-                        mVisualizer.setEnabled(false);
+                        //mVisualizer.setEnabled(false);
                         mIsPause = true;
                     }
                     sendAudioEvent(PAUSE_EVENT, null);
@@ -356,7 +367,7 @@ public class AudioPlayService extends Service {
                         synchronized (mLock) {
                             mMediaPlayer.start();
                         }
-                        mVisualizer.setEnabled(true);
+                        //mVisualizer.setEnabled(true);
                         mIsPause = false;
                     }
                     sendAudioEvent(REPLAY_EVENT, null);
@@ -370,7 +381,7 @@ public class AudioPlayService extends Service {
                 synchronized (mLock) {
                     mMediaPlayer.stop();
                 }
-                mVisualizer.setEnabled(false);
+                //mVisualizer.setEnabled(false);
                 break;
             // 唤出播放器页面
             case ACTIVITY_ACTION:
@@ -413,7 +424,11 @@ public class AudioPlayService extends Service {
             }
         }
         if (mVisualizer != null) {
+            mVisualizer.setEnabled(false);
             mVisualizer.release();
+        }
+        if (mEqualizer != null) {
+            mEqualizer.release();
         }
         Log.d("player-service", "destroy");
     }

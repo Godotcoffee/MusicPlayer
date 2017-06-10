@@ -11,12 +11,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/linearLayout">
+        android:layout_toStartOf="@+id/relativeLayout">
         <ImageView
             android:id="@+id/album"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:scaleType="fitCenter"/>
+            android:scaleType="fitCenter" />
 
         <TextView
             android:id="@+id/title"
@@ -54,13 +54,13 @@
     <RelativeLayout
         android:layout_width="80dp"
         android:layout_height="wrap_content"
-        android:id="@+id/linearLayout"
+        android:id="@+id/relativeLayout"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="6dp">
 
         <RelativeLayout
-            android:id="@+id/homebar_ackground"
+            android:id="@+id/homebar_background"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_alignParentTop="true"
@@ -78,7 +78,7 @@
                 android:adjustViewBounds="true"
                 android:background="#00000000"
                 android:scaleType="centerInside"
-                android:src="@drawable/pause_light"
+                android:src="@drawable/play_light"
                 android:visibility="visible" />
 
         </RelativeLayout>
@@ -93,7 +93,7 @@
             android:src="@drawable/skip_next"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_toEndOf="@+id/homebar_ackground"
+            android:layout_toEndOf="@+id/homebar_background"
             android:layout_marginEnd="4dp"/>
     </RelativeLayout>
 

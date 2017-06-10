@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -15,8 +16,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ListActivity extends AppCompatActivity {
+public class ListActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_REQUEST_CODE = 1;
     private static String[] permissionArray = new String[] {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -46,6 +49,9 @@ public class ListActivity extends AppCompatActivity {
     private TextView mBarTitle;
     private TextView mBarArtist;
     private ImageView mBarAlbum;
+    private ImageButton mBarPauseButton;
+    private ImageButton mBarNextButton;
+    private View mBarPauseBackground;
 
     private BroadcastReceiver mEventReceiver;
 
@@ -106,10 +112,15 @@ public class ListActivity extends AppCompatActivity {
 
             mBarArtist.setText(audio.getArtist());
 
-            mBarAlbum.setImageDrawable(MediaUtils.getAlbumBitmapDrawable(this, audio));
-
+            BitmapDrawable bitmapDrawable = MediaUtils.getAlbumBitmapDrawable(this, audio);
+            if (bitmapDrawable != null) {
+                mBarAlbum.setImageDrawable(bitmapDrawable);
+                mBarAlbum.setVisibility(View.VISIBLE);
+            } else {
+                mBarAlbum.setImageResource(R.drawable.no_album);
+            }
+            enableButton(false);
             startService(serviceIntent);
-            mIsPlaying = start;
         }
     }
 
@@ -157,13 +168,9 @@ public class ListActivity extends AppCompatActivity {
                 }
             }
             if (index == 0 && next && !fromUser && mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
-                index = -1;
-            }
-            if (index >= 0) {
-                playAudio(index, mIsPlaying, mIsShuffle, true);
+                playAudio(index, false, mIsShuffle, true);
             } else {
-                playAudio(0, false, mIsShuffle, true);
-                mIsPlaying = false;
+                playAudio(index, mIsPlaying, true, true);
             }
         }
     }
@@ -198,7 +205,32 @@ public class ListActivity extends AppCompatActivity {
     }
 
     private void pause() {
+        if (mLastPlay >= 0) {
+            Intent intent = new Intent(ListActivity.this, AudioPlayService.class);
+            if (mIsPlaying) {
+                intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PAUSE_ACTION);
+            } else {
+                intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.REPLAY_ACTION);
+            }
+            enableButton(false);
+            startService(intent);
+        }
+    }
 
+    private void enableButton(boolean enable) {
+        enableButton(enable, false);
+    }
+
+    private void enableButton(boolean enable, boolean grey) {
+        mBarPauseButton.setEnabled(enable);
+        mBarPauseBackground.setEnabled(enable);
+        mBarNextButton.setEnabled(enable);
+
+        if (grey && !enable) {
+            mBarPauseBackground.setBackgroundResource(R.drawable.shadowed_circle_grey);
+        } else {
+            mBarPauseBackground.setBackgroundResource(R.drawable.shadowed_circle_red);
+        }
     }
 
     @Override
@@ -211,31 +243,37 @@ public class ListActivity extends AppCompatActivity {
         mBarTitle = (TextView) barView.findViewById(R.id.title);
         mBarArtist = (TextView) barView.findViewById(R.id.artist);
         mBarAlbum = (ImageView) barView.findViewById(R.id.album);
+        mBarPauseButton = (ImageButton) barView.findViewById(R.id.home_pauseButton);
+        mBarNextButton = (ImageButton) barView.findViewById(R.id.home_nextButton);
+        mBarPauseBackground = barView.findViewById(R.id.homebar_background);
 
         mBarTitle.setHorizontallyScrolling(true);
         mBarTitle.setSelected(true);
         mBarArtist.setHorizontallyScrolling(true);
         mBarArtist.setSelected(true);
 
-        barView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
-                    Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
-                    intent.setClass(ListActivity.this, PlayerActivity.class);
-                    intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
-                    Log.d("bool", mIsPlaying + "");
-                    intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);
-                }
-            }
-        });
+        enableButton(false, true);
 
+        // 弹出播放器界面
+        barView.setOnClickListener(this);
+
+        // 播放条暂停按钮事件监听器
+        mBarPauseButton.setOnClickListener(this);
+
+        // 播放条暂停按钮背景事件监听器
+        mBarPauseBackground.setOnClickListener(this);
+
+        // 播放条下一首事件监听器
+        mBarNextButton.setOnClickListener(this);
+
+        // 事件广播接受器
         LocalBroadcastManager.getInstance(this).registerReceiver(mEventReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String event = intent.getStringExtra(AudioPlayService.EVENT_KEY);
+                if (event == null) {
+                    return;
+                }
                 switch (event) {
                     case AudioPlayService.FINISHED_EVENT:
                         musicChange(true, false);
@@ -249,11 +287,26 @@ public class ListActivity extends AppCompatActivity {
                         musicChange(false, true);
                         adapter.notifyDataSetChanged();
                         break;
+                    case AudioPlayService.PLAY_EVENT:
+                        boolean isPlay = intent.getBooleanExtra(AudioPlayService.AUDIO_PLAY_NOW_BOOL, false);
+                        if (isPlay) {
+                            mBarPauseButton.setImageResource(R.drawable.pause_light);
+                            mIsPlaying = true;
+                        } else {
+                            mBarPauseButton.setImageResource(R.drawable.play_light);
+                            mIsPlaying = false;
+                        }
+                        enableButton(true);
+                        break;
                     case AudioPlayService.PAUSE_EVENT:
+                        mBarPauseButton.setImageResource(R.drawable.play_light);
                         mIsPlaying = false;
+                        enableButton(true);
                         break;
                     case AudioPlayService.REPLAY_EVENT:
+                        mBarPauseButton.setImageResource(R.drawable.pause_light);
                         mIsPlaying = true;
+                        enableButton(true);
                         break;
                     case AudioPlayService.LIST_ORDER_EVENT:
                         mIsShuffle = intent.getBooleanExtra(AudioPlayService.LIST_ORDER_BOOL, true);
@@ -270,6 +323,7 @@ public class ListActivity extends AppCompatActivity {
             }
         }, new IntentFilter(AudioPlayService.BROADCAST_EVENT_FILTER));
 
+        // 权限分配
         List<String> requestList = new ArrayList<>();
 
         for (String permission : permissionArray) {
@@ -324,5 +378,32 @@ public class ListActivity extends AppCompatActivity {
     @Override
     public void finish() {
         moveTaskToBack(false);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            // 弹出播放器界面
+            case R.id.bar:
+                if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
+                    Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
+                    intent.setClass(ListActivity.this, PlayerActivity.class);
+                    intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
+                    Log.d("bool", mIsPlaying + "");
+                    intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
+                    intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);
+                }
+                break;
+            // 暂停按钮
+            case R.id.home_pauseButton: case R.id.homebar_background:
+                pause();
+                break;
+            // 下一首
+            case R.id.home_nextButton:
+                musicChange(true, true);
+                break;
+        }
     }
 }
