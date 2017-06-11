@@ -1,56 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/now_playing_controls_background_light">
-
+    android:background="@drawable/now_playing_controls_background_light"
+    android:orientation="vertical">
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/classification"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:maxLines="1"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:textSize="25sp"
-        android:text="Title"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/album"
-        android:layout_toStartOf="@+id/status"
-        android:layout_marginStart="11dp" />
-
-    <ImageView
-        android:id="@+id/status"
-        android:layout_width="20dp"
         android:layout_height="20dp"
-        android:scaleType="fitCenter"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
-        android:layout_above="@+id/artist" />
+        android:paddingLeft="10dp"
+        android:background="@drawable/now_playing_controls_background_light"
+        android:textColor="@color/blue"
+        android:textSize="18sp"
+        android:text="" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:textSize="25sp"
+            android:text="Title"
+            android:layout_toStartOf="@+id/status" />
 
-    <TextView
-        android:id="@+id/artist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
-        android:layout_alignLeft="@+id/title"
-        android:layout_toLeftOf="@+id/duration"
-        android:paddingLeft="5dp"
-        android:maxLines="1"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:textSize="15sp"
-        android:text="Artist"/>
+        <ImageView
+            android:id="@+id/status"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:scaleType="fitCenter"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_above="@+id/artist" />
 
-    <TextView
-        android:id="@+id/duration"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
-        android:layout_alignRight="@+id/status"
+        <TextView
+            android:id="@+id/artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/title"
+            android:layout_alignLeft="@+id/title"
+            android:layout_toLeftOf="@+id/duration"
+            android:paddingLeft="5dp"
+            android:maxLines="1"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:textSize="15sp"
+            android:text="Artist"/>
 
-        android:text="00:00"/>
+        <TextView
+            android:id="@+id/duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/title"
+            android:layout_alignRight="@+id/status"
 
-</RelativeLayout>
+            android:text="00:00"/>
+
+    </RelativeLayout>
+</LinearLayout>

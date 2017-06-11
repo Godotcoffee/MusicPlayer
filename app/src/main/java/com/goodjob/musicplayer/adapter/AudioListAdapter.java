@@ -4,17 +4,17 @@ import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.entity.Audio;
-import com.goodjob.musicplayer.entity.AudioListItem;
-import com.goodjob.musicplayer.util.AsyncBitmapLoader;
+import com.goodjob.musicplayer.entity.AudioItem;
 
 import java.util.List;
 
@@ -22,11 +22,11 @@ import java.util.List;
  * Created by Godot on 2017/6/1.
  */
 
-public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
+public class AudioListAdapter extends BaseAdapter {
     private Context mContext;
     private int mResource;
     private LayoutInflater mInflater;
-    private AsyncBitmapLoader mAsyncBitmapLoader;
+    private List<AudioItem> mList;
 
     private static class ViewHolder {
         TextView title;
@@ -34,14 +34,30 @@ public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
         TextView duration;
         //ImageView album;
         ImageView status;
+        TextView classification;
+        int originClassificationHeight;
     }
 
-    public AudioListAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<AudioListItem> objects) {
-        super(context, resource, objects);
+    public AudioListAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<AudioItem> objects) {
         mContext = context;
         mResource = resource;
         mInflater = LayoutInflater.from(mContext);
-        mAsyncBitmapLoader = new AsyncBitmapLoader(context);
+        mList = objects;
+    }
+
+    @Override
+    public int getCount() {
+        return mList.size();
+    }
+
+    @Override
+    public AudioItem getItem(int position) {
+        return mList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
     }
 
     @NonNull
@@ -56,12 +72,14 @@ public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
             viewHolder.duration = (TextView) convertView.findViewById(R.id.duration);
             //viewHolder.album = (ImageView) convertView.findViewById(R.id.album);
             viewHolder.status = (ImageView) convertView.findViewById(R.id.status);
+            viewHolder.classification = (TextView) convertView.findViewById(R.id.classification);
+            viewHolder.originClassificationHeight = viewHolder.classification.getHeight();
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        AudioListItem audioItem = getItem(position);
+        AudioItem audioItem = getItem(position);
         Audio audio = audioItem.getAudio();
 
         viewHolder.title.setText(audio.getTitle());
@@ -72,6 +90,16 @@ public class AudioListAdapter extends ArrayAdapter<AudioListItem> {
         int second = totalSecond % 60;
 
         viewHolder.duration.setText(String.format("%02d:%02d", minute, second));
+
+        if (position == 0 || audioItem.getClassficationId() != getItem(position - 1).getClassficationId()) {
+            viewHolder.classification.setText(audioItem.getClassificationName());
+            viewHolder.classification.setHeight(viewHolder.originClassificationHeight);
+            viewHolder.classification.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.classification.setText("");
+            viewHolder.classification.setVisibility(View.GONE);
+        }
+        Log.d("classc", audioItem.getClassficationId() + "");
 
         //viewHolder.album.setTag(audio.getAlbumId());
         //mAsyncBitmapLoader.load(viewHolder.album, audio.getAlbumId(), R.drawable.no_album);

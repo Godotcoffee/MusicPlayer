@@ -10,12 +10,23 @@
 
     </include>
 
-    <ListView
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/title_home"
+        android:layout_above="@+id/linear_layout">
+        <android.support.v4.view.PagerTitleStrip
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </android.support.v4.view.ViewPager>
+
+    <!--<ListView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/linear_layout"
-        android:layout_below="@id/title_home"/>
+        android:layout_below="@id/title_home"/> -->
 
     <LinearLayout
         android:id="@+id/linear_layout"

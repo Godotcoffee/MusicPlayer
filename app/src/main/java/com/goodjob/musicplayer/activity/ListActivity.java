@@ -11,14 +11,15 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.PermissionChecker;
+import android.support.v4.view.ViewPager;
+import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -26,15 +27,19 @@ import android.widget.TextView;
 
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.adapter.AudioListAdapter;
+import com.goodjob.musicplayer.adapter.ViewPagerAdapter;
 import com.goodjob.musicplayer.entity.Audio;
-import com.goodjob.musicplayer.entity.AudioListItem;
+import com.goodjob.musicplayer.entity.AudioItem;
 import com.goodjob.musicplayer.service.AudioPlayService;
 import com.goodjob.musicplayer.util.AudioList;
+import com.goodjob.musicplayer.util.AudioToAudioItem;
 import com.goodjob.musicplayer.util.MediaUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 public class ListActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_REQUEST_CODE = 1;
@@ -44,7 +49,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     private ListView listView;
-    private ArrayAdapter adapter;
+    private List<BaseAdapter> mAdapterList;
 
     private TextView mBarTitle;
     private TextView mBarArtist;
@@ -55,7 +60,9 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
     private BroadcastReceiver mEventReceiver;
 
-    private List<AudioListItem> audioItemList;
+    private List<List<AudioItem>> listOfAudioItemList;
+    private int mPlayingIndex = -1;
+
     private List<Integer> mShuffleIndex;
 
     private int mLastPlay = -1;
@@ -88,11 +95,12 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void playAudio(int position, boolean start, boolean shuffle, boolean forced) {
         if (forced || position != mLastPlay) {
-            AudioListItem item = audioItemList.get(position);
-            Audio audio = item.getAudio();
+            List<AudioItem> list = listOfAudioItemList.get(mPlayingIndex);
+            AudioItem audioItem = list.get(position);
+            Audio audio = audioItem.getAudio();
 
             if (shuffle) {
-                shuffleAudioIndex(mShuffleIndex, position);
+                shuffleAudioIndex(list, position);
                 mLastIndex = 0;
             }
 
@@ -101,11 +109,6 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
             serviceIntent.putExtra(AudioPlayService.AUDIO_PLAY_NOW_BOOL, start);
             serviceIntent.setClass(this, AudioPlayService.class);
 
-            item.setPlayStatus(AudioListItem.PLAYING);
-
-            if (mLastPlay != -1 && position != mLastPlay) {
-                ((AudioListItem) listView.getItemAtPosition(mLastPlay)).setPlayStatus(AudioListItem.DEFAULT);
-            }
             mLastPlay = position;
 
             mBarTitle.setText(audio.getTitle());
@@ -115,7 +118,6 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
             BitmapDrawable bitmapDrawable = MediaUtils.getAlbumBitmapDrawable(this, audio);
             if (bitmapDrawable != null) {
                 mBarAlbum.setImageDrawable(bitmapDrawable);
-                mBarAlbum.setVisibility(View.VISIBLE);
             } else {
                 mBarAlbum.setImageResource(R.drawable.no_album);
             }
@@ -126,19 +128,24 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 把indexList乱序后将值=playIndex的项交换到开头
-     * @param indexList
      * @param playIndex
      */
-    private void shuffleAudioIndex(List<Integer> indexList, int playIndex) {
-        Collections.shuffle(indexList);
-        for (int i = 0; i < indexList.size(); ++i) {
-            if (indexList.get(i) == playIndex) {
-                Collections.swap(indexList, i, 0);
-                break;
+    private void shuffleAudioIndex(List<? extends Object> audioList, int playIndex) {
+        if (mShuffleIndex == null) {
+            mShuffleIndex = new ArrayList<>();
+        }
+        if (mShuffleIndex.size() != audioList.size()) {
+            mShuffleIndex.clear();
+            for (int i = 0; i < audioList.size(); ++i) {
+                mShuffleIndex.add(i);
             }
         }
+        Collections.shuffle(mShuffleIndex);
         for (int i = 0; i < mShuffleIndex.size(); ++i) {
-            Log.d("list", mShuffleIndex.get(i) + "");
+            if (mShuffleIndex.get(i) == playIndex) {
+                Collections.swap(mShuffleIndex, i, 0);
+                break;
+            }
         }
     }
 
@@ -153,18 +160,20 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             int index;
             if (mIsShuffle) {
+                int listSize = mShuffleIndex.size();
                 if (next) {
-                    index = mShuffleIndex.get(mLastIndex = (mLastIndex + 1) % mShuffleIndex.size());
+                    index = mShuffleIndex.get(mLastIndex = (mLastIndex + 1) % listSize);
                 } else {
                     index = mShuffleIndex.get(
-                            mLastIndex = (mLastIndex - 1 + mShuffleIndex.size()) % mShuffleIndex.size());
+                            mLastIndex = (mLastIndex - 1 + listSize) % listSize);
                 }
                 mLastIndex = index;
             } else {
+                int listSize = listOfAudioItemList.get(mPlayingIndex).size();
                 if (next) {
-                    index = (mLastPlay + 1) % audioItemList.size();
+                    index = (mLastPlay + 1) % listSize;
                 } else {
-                    index = (mLastPlay - 1 + audioItemList.size()) % audioItemList.size();
+                    index = (mLastPlay - 1 + listSize) % listSize;
                 }
             }
             if (index == 0 && next && !fromUser && mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
@@ -179,16 +188,112 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化列表
      */
     private void init() {
-        List<Audio> audioList = AudioList.getAudioList(this);
-        audioItemList = new ArrayList<>();
-        mShuffleIndex = new ArrayList<>();
-        int index = 0;
-        for (Audio audio : audioList) {
-            audioItemList.add(new AudioListItem(audio));
-            mShuffleIndex.add(index++);
+        // 标题
+        final String[] titles = new String[] {
+            "Audio", "Artist", "Album"
+        };
+        // 排序比较器
+        Comparator[] cmps = new Comparator[] {
+                new Comparator<Audio>() {
+                    @Override
+                    public int compare(Audio o1, Audio o2) {
+                        return o1.getTitle().compareTo(o2.getTitle());
+                    }
+                },
+                new Comparator<Audio>() {
+                    @Override
+                    public int compare(Audio o1, Audio o2) {
+                        int res = o1.getArtist().compareTo(o2.getArtist());
+                        if (res != 0) {
+                            return res;
+                        }
+                        return o1.getArtistId() - o2.getArtistId();
+                    }
+                },
+                new Comparator<Audio>() {
+                    @Override
+                    public int compare(Audio o1, Audio o2) {
+                        int res = o1.getAlbum().compareTo(o2.getAlbum());
+                        if (res != 0) {
+                            return res;
+                        }
+                        return o1.getAlbumId() - o2.getAlbumId();
+                    }
+                }
+        };
+        // 转换
+        AudioToAudioItem[] trans = new AudioToAudioItem[] {
+                new AudioToAudioItem() {
+                    @Override
+                    public AudioItem apply(Audio audio) {
+                        AudioItem audioItem = new AudioItem(audio);
+                        String title = audio.getTitle();
+                        audioItem.setClassficationId(title.length() > 0 ? title.charAt(0) : -1);
+                        audioItem.setClassficationName(title.length() > 0 ? title.charAt(0) + "" : "");
+                        return audioItem;
+                    }
+                },
+                new AudioToAudioItem() {
+                    @Override
+                    public AudioItem apply(Audio audio) {
+                        AudioItem audioItem = new AudioItem(audio);
+                        audioItem.setClassficationId(audio.getArtistId());
+                        audioItem.setClassficationName(audio.getArtist());
+                        return audioItem;
+                    }
+                },
+                new AudioToAudioItem() {
+                    @Override
+                    public AudioItem apply(Audio audio) {
+                        AudioItem audioItem = new AudioItem(audio);
+                        audioItem.setClassficationId(audio.getAlbumId());
+                        audioItem.setClassficationName(audio.getAlbum());
+                        return audioItem;
+                    }
+                }
+        };
+
+        List<View> viewList = new ArrayList<>();
+        List<String> titleList = new ArrayList<>();
+
+        mAdapterList = new ArrayList<>();
+        listOfAudioItemList = new ArrayList<>();
+
+        for (int i = 0; i < titles.length; ++i) {
+            List<Audio> list = AudioList.getAudioList(this, cmps[i]);
+            List<AudioItem> itemList = new ArrayList<>();
+            for (Audio audio : list) {
+                itemList.add(trans[i].apply(audio));
+            }
+            listOfAudioItemList.add(itemList);
+            final AudioListAdapter adapter = new AudioListAdapter(this, R.layout.list_music, itemList);
+            mAdapterList.add(adapter);
+            listView = new ListView(this);
+            listView.setAdapter(adapter);
+            final int index = i;
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    mPlayingIndex = index;
+                    playAudio(position, true, true, false);
+                    adapter.notifyDataSetChanged();
+                }
+            });
+            viewList.add(listView);
+            titleList.add(titles[i]);
         }
 
-        listView = (ListView) findViewById(R.id.list_view);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+        viewPager.setAdapter(new ViewPagerAdapter(titleList, viewList));
+
+        /*List<Audio> audioList = AudioList.getAudioList(this);
+        audioItemList = new AudioItemList(audioList);
+        mShuffleIndex = new ArrayList<>();
+        for (int i = 0; i < audioList.size(); ++i) {
+            mShuffleIndex.add(i);
+        }
+
+        listView = new ListView(this);
         adapter = new AudioListAdapter(this, R.layout.list_music, audioItemList);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -196,12 +301,23 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d("click", "abc");
                 playAudio(position, true, true, false);
-                Audio audio = audioItemList.get(position).getAudio();
+                Audio audio = audioItemList.get(position);
                 Intent activityIntent = new Intent();
                 //startActivity(activityIntent);
                 adapter.notifyDataSetChanged();
             }
         });
+
+        viewList.add(listView);
+        TextView tv = new TextView(this);
+        tv.setText("abc");
+        viewList.add(tv);
+
+        titleList.add("Audio");
+        titleList.add("Album");
+
+        ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+        viewPager.setAdapter(new ViewPagerAdapter(titleList, viewList));*/
     }
 
     private void pause() {
@@ -235,8 +351,8 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mLoopWay = AudioPlayService.LIST_NOT_LOOP;
         super.onCreate(savedInstanceState);
+        mLoopWay = AudioPlayService.LIST_NOT_LOOP;
         setContentView(R.layout.activity_list);
 
         View barView = findViewById(R.id.bar);
@@ -277,15 +393,21 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                 switch (event) {
                     case AudioPlayService.FINISHED_EVENT:
                         musicChange(true, false);
-                        adapter.notifyDataSetChanged();
+                        if (mPlayingIndex >= 0 && mPlayingIndex < mAdapterList.size()) {
+                            mAdapterList.get(mPlayingIndex).notifyDataSetChanged();
+                        }
                         break;
                     case AudioPlayService.NEXT_EVENT:
                         musicChange(true, true);
-                        adapter.notifyDataSetChanged();
+                        if (mPlayingIndex >= 0 && mPlayingIndex < mAdapterList.size()) {
+                            mAdapterList.get(mPlayingIndex).notifyDataSetChanged();
+                        }
                         break;
                     case AudioPlayService.PREVIOUS_EVENT:
                         musicChange(false, true);
-                        adapter.notifyDataSetChanged();
+                        if (mPlayingIndex >= 0 && mPlayingIndex < mAdapterList.size()) {
+                            mAdapterList.get(mPlayingIndex).notifyDataSetChanged();
+                        }
                         break;
                     case AudioPlayService.PLAY_EVENT:
                         boolean isPlay = intent.getBooleanExtra(AudioPlayService.AUDIO_PLAY_NOW_BOOL, false);
@@ -310,8 +432,8 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case AudioPlayService.LIST_ORDER_EVENT:
                         mIsShuffle = intent.getBooleanExtra(AudioPlayService.LIST_ORDER_BOOL, true);
-                        if (mIsShuffle && mLastPlay != -1) {
-                            shuffleAudioIndex(mShuffleIndex, mLastPlay);
+                        if (mIsShuffle) {
+                            shuffleAudioIndex(listOfAudioItemList.get(mPlayingIndex), mLastPlay);
                             mLastIndex = 0;
                         }
                         break;
@@ -385,11 +507,11 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             // 弹出播放器界面
             case R.id.bar:
+                List<AudioItem> audioItemList = listOfAudioItemList.get(mPlayingIndex);
                 if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
                     Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                     intent.setClass(ListActivity.this, PlayerActivity.class);
                     intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
-                    Log.d("bool", mIsPlaying + "");
                     intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
                     intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
                     startActivity(intent);

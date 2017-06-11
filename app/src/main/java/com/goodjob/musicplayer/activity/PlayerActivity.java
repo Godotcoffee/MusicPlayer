@@ -98,14 +98,14 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             }
 
             // 特殊处理，停止旋转需要时间
-            /*boolean isPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
+            boolean isPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
             if (isPlay != albumImageView.isRunning()) {
                if (isPlay) {
                    albumImageView.start();
                } else {
                    albumImageView.stop();
                }
-            }*/
+            }
 
             int duration = bundle.getInt(AudioPlayService.AUDIO_DURATION_INT, 0);
             int current = Math.min(bundle.getInt(AudioPlayService.AUDIO_CURRENT_INT, 0), duration);
@@ -162,14 +162,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             //mIsPlay = true;
             //pauseButton.setImageResource(R.drawable.play_light);
         }
-        if (albumImageView.isRunning()) {
-            if (mIsAlbum) {
-                //albumImageView.stop();
-            }
-        } else {
-            //albumImageView.start();
-        }
-        enableButton(false, mIsPlay);
+
+        enableButton(false, false);
         startService(intent);
     }
 
@@ -185,7 +179,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.CHANGE_LIST_SHUFFLE_ACTION);
         intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle = !mIsShuffle);
         startService(intent);
-        Toast.makeText(this, "切换到" + (mIsShuffle ? "随机播放" : "顺序播放"), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "切换到" + (mIsShuffle ? "随机播放" : "顺序播放"), Toast.LENGTH_SHORT).show();
         if (mIsShuffle) {
             shuffleButton.setImageResource(R.drawable.btn_playback_shuffle_all);
         } else {
@@ -353,6 +347,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     frameLayout.addView(visualizerView);
                 } else{
                     frameLayout.addView(albumImageView);
+                    if (mIsPlay != albumImageView.isRunning()) {
+                        if (mIsPlay) {
+                            albumImageView.start();
+                        } else {
+                            albumImageView.stop();
+                        }
+                    }
                 }
                 mIsAlbum = !mIsAlbum;
             }
@@ -396,6 +397,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                         synchronized (mLock) {
                             pauseButton.setImageResource(R.drawable.play_light);
                             albumImageView.stop();
+                            enableButton(true);
+
                         }
                         mIsPlay = false;
                         break;
@@ -419,8 +422,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                             } else {
                                 pauseButton.setImageResource(R.drawable.play_light);
                                 if (albumImageView.isRunning()) {
-                                    enableButton(false, true);
-                                    albumImageView.stop();
+                                    if (mIsAlbum) {
+                                        enableButton(false, true);
+                                        albumImageView.stop();
+                                    } else {
+                                        enableButton(true);
+                                    }
                                 } else {
                                     enableButton(true);
                                 }

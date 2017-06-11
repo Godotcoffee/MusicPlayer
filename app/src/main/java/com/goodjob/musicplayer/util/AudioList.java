@@ -6,6 +6,8 @@ import android.util.Log;
 import com.goodjob.musicplayer.entity.Audio;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -34,6 +36,12 @@ public class AudioList {
                 }
             }
         }
-        return mAudioList;
+        return Collections.unmodifiableList(mAudioList);
+    }
+
+    public static List<Audio> getAudioList(Context context, Comparator<? super Audio> cmp) {
+        List<Audio> newList = new ArrayList<>(getAudioList(context));
+        Collections.sort(newList, cmp);
+        return newList;
     }
 }
