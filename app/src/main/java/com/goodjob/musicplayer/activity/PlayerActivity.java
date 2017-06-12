@@ -10,7 +10,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -36,22 +35,22 @@ import me.zhengken.lyricview.LyricView;
 public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String DEFAULT_LYRICS_STRING = "[ti:生活很美好]";
 
-    private SeekBar seekBar;
-    private TextView currentTextView;
-    private TextView durationTextView;
-    private TextView titleTextView;
-    private TextView artistTextView;
-    private MusicCoverView albumImageView;
-    private VisualizerView visualizerView;
-    private FrameLayout frameLayout;
-    private ImageButton pauseButton;
-    private ImageButton nextButton;
-    private ImageButton previousButton;
-    private ImageButton repeatButton;
-    private ImageButton shuffleButton;
-    private ImageButton returnButton;
-    private LyricView lyricView;
-    private View pauseButtonBackground;
+    private SeekBar mSeekBar;
+    private TextView mCurrentTextView;
+    private TextView mDurationTextView;
+    private TextView mTitleTextView;
+    private TextView mArtistTextView;
+    private MusicCoverView mAlbumImageView;
+    private VisualizerView mVisualizerView;
+    private FrameLayout mFrameLayout;
+    private ImageButton mPauseButton;
+    private ImageButton mNextButton;
+    private ImageButton mPreviousButton;
+    private ImageButton mRepeatButton;
+    private ImageButton mShuffleButton;
+    private ImageButton mReturnButton;
+    private LyricView mLyricView;
+    private View mPauseButtonBackground;
 
     private Object mLock = new Object();
 
@@ -89,10 +88,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             int albumId = bundle.getInt(AudioPlayService.AUDIO_ALBUM_ID_INT, -1);
 
             if (mTitle == null || !mTitle.equals(title)) {
-                titleTextView.setText(mTitle = title);
+                mTitleTextView.setText(mTitle = title);
             }
             if (mArtist == null || !mArtist.equals(artist)) {
-                artistTextView.setText(mArtist = artist);
+                mArtistTextView.setText(mArtist = artist);
             }
 
             if (mPath == null || !mPath.equals(path)) {
@@ -102,11 +101,11 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
             // 特殊处理，停止旋转需要时间
             boolean isPlay = bundle.getBoolean(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
-            if (isPlay != albumImageView.isRunning()) {
+            if (isPlay != mAlbumImageView.isRunning()) {
                if (isPlay) {
-                   albumImageView.start();
+                   mAlbumImageView.start();
                } else {
-                   albumImageView.stop();
+                   mAlbumImageView.stop();
                }
             }
 
@@ -114,26 +113,26 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             int current = Math.min(bundle.getInt(AudioPlayService.AUDIO_CURRENT_INT, 0), duration);
 
             if (!onDrag) {
-                int min = 0, max = seekBar.getMax();
+                int min = 0, max = mSeekBar.getMax();
                 int pos = 0;
                 if (duration != 0 && (max - min) != 0) {
                     pos = (int) ((current * 1.0 / duration) * (max - min));
                 }
-                seekBar.setProgress(pos);
-                lyricView.setCurrentTimeMillis(current);
+                mSeekBar.setProgress(pos);
+                mLyricView.setCurrentTimeMillis(current);
             }
 
             int totalSecond = current / 1000;
             int minute = totalSecond / 60;
             int second = totalSecond % 60;
             if (!onDrag) {
-                currentTextView.setText(String.format("%02d:%02d", minute, second));
+                mCurrentTextView.setText(String.format("%02d:%02d", minute, second));
             }
             if (mDuration != duration) {
                 totalSecond = (mDuration = duration) / 1000;
                 minute = totalSecond / 60;
                 second = totalSecond % 60;
-                durationTextView.setText(String.format("%02d:%02d", minute, second));
+                mDurationTextView.setText(String.format("%02d:%02d", minute, second));
             }
         }
     }
@@ -143,8 +142,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         Bitmap bitmap = MediaUtils.getAlbumBitmapDrawable(path);
         if (bitmap != null) {
             // 进行缩放处理
-            int viewWidth = frameLayout.getWidth();
-            int viewHeight = frameLayout.getHeight();
+            int viewWidth = mFrameLayout.getWidth();
+            int viewHeight = mFrameLayout.getHeight();
             int imageWidth = bitmap.getWidth();
             int imageHeight = bitmap.getHeight();
 
@@ -156,9 +155,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             Matrix matrix = new Matrix();
             matrix.postScale(scale, scale);
             Bitmap resize = Bitmap.createBitmap(bitmap, 0, 0, imageWidth, imageHeight, matrix, true);
-            albumImageView.setImageDrawable(new BitmapDrawable(getResources(), resize));
+            mAlbumImageView.setImageDrawable(new BitmapDrawable(getResources(), resize));
         } else {
-            albumImageView.setImageResource(R.drawable.no_album);
+            mAlbumImageView.setImageResource(R.drawable.no_album);
         }
     }
 
@@ -237,7 +236,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
             }
         }
-        lyricView.setLyricFile(file);
+        mLyricView.setLyricFile(file);
     }
 
     /**
@@ -250,9 +249,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         startService(intent);
         //Toast.makeText(this, "切换到" + (mIsShuffle ? "随机播放" : "顺序播放"), Toast.LENGTH_SHORT).show();
         if (mIsShuffle) {
-            shuffleButton.setImageResource(R.drawable.btn_playback_shuffle_all);
+            mShuffleButton.setImageResource(R.drawable.btn_playback_shuffle_all);
         } else {
-            shuffleButton.setImageResource(R.drawable.shuffle);
+            mShuffleButton.setImageResource(R.drawable.shuffle);
         }
     }
 
@@ -264,13 +263,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.CHANGE_LOOP_ACTION);
         if (mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
             mLoopWay = AudioPlayService.LIST_LOOP;
-            repeatButton.setImageResource(R.drawable.btn_playback_repeat_all);
+            mRepeatButton.setImageResource(R.drawable.btn_playback_repeat_all);
         } else if (mLoopWay == AudioPlayService.LIST_LOOP) {
             mLoopWay = AudioPlayService.AUDIO_REPEAT;
-            repeatButton.setImageResource(R.drawable.btn_playback_repeat_one);
+            mRepeatButton.setImageResource(R.drawable.btn_playback_repeat_one);
         } else {
             mLoopWay = AudioPlayService.LIST_NOT_LOOP;
-            repeatButton.setImageResource(R.drawable.repeat);
+            mRepeatButton.setImageResource(R.drawable.repeat);
         }
         intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
         startService(intent);
@@ -281,15 +280,15 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         enableButton(enable, false);
     }
     public void enableButton(boolean enable, boolean grey) {
-        pauseButton.setEnabled(enable);
-        pauseButtonBackground.setEnabled(enable);
-        nextButton.setEnabled(enable);
-        previousButton.setEnabled(enable);
+        mPauseButton.setEnabled(enable);
+        mPauseButtonBackground.setEnabled(enable);
+        mNextButton.setEnabled(enable);
+        mPreviousButton.setEnabled(enable);
 
         if (grey && !enable) {
-            pauseButtonBackground.setBackgroundResource(R.drawable.shadowed_circle_grey);
+            mPauseButtonBackground.setBackgroundResource(R.drawable.shadowed_circle_grey);
         } else {
-            pauseButtonBackground.setBackgroundResource(R.drawable.shadowed_circle_red);
+            mPauseButtonBackground.setBackgroundResource(R.drawable.shadowed_circle_red);
         }
     }
 
@@ -306,40 +305,40 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
 
-        seekBar = (SeekBar) findViewById(R.id.seekBar);
-        currentTextView = (TextView) findViewById(R.id.current);
-        durationTextView = (TextView) findViewById(R.id.duration);
-        titleTextView = (TextView) findViewById(R.id.title);
-        artistTextView = (TextView) findViewById(R.id.artist);
-        frameLayout = (FrameLayout) findViewById(R.id.album);
-        pauseButton = (ImageButton) findViewById(R.id.playPauseButton);
-        nextButton = (ImageButton) findViewById(R.id.nextButton);
-        previousButton = (ImageButton) findViewById(R.id.previousButton);
-        repeatButton = (ImageButton) findViewById(R.id.repeatButton);
-        shuffleButton = (ImageButton) findViewById(R.id.shuffleButton);
-        returnButton = (ImageButton) findViewById(R.id.returnButton);
-        lyricView = (LyricView) findViewById(R.id.lyric_view);
-        pauseButtonBackground = findViewById(R.id.playPauseButtonBackground);
+        mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+        mCurrentTextView = (TextView) findViewById(R.id.current);
+        mDurationTextView = (TextView) findViewById(R.id.duration);
+        mTitleTextView = (TextView) findViewById(R.id.title);
+        mArtistTextView = (TextView) findViewById(R.id.artist);
+        mFrameLayout = (FrameLayout) findViewById(R.id.album);
+        mPauseButton = (ImageButton) findViewById(R.id.playPauseButton);
+        mNextButton = (ImageButton) findViewById(R.id.nextButton);
+        mPreviousButton = (ImageButton) findViewById(R.id.previousButton);
+        mRepeatButton = (ImageButton) findViewById(R.id.repeatButton);
+        mShuffleButton = (ImageButton) findViewById(R.id.shuffleButton);
+        mReturnButton = (ImageButton) findViewById(R.id.returnButton);
+        mLyricView = (LyricView) findViewById(R.id.lyric_view);
+        mPauseButtonBackground = findViewById(R.id.playPauseButtonBackground);
 
-        titleTextView.setHorizontallyScrolling(true);
-        titleTextView.setSelected(true);
-        artistTextView.setHorizontallyScrolling(true);
-        artistTextView.setSelected(true);
+        mTitleTextView.setHorizontallyScrolling(true);
+        mTitleTextView.setSelected(true);
+        mArtistTextView.setHorizontallyScrolling(true);
+        mArtistTextView.setSelected(true);
 
-        pauseButton.setOnClickListener(this);
-        pauseButtonBackground.setOnClickListener(this);
-        repeatButton.setOnClickListener(this);
-        shuffleButton.setOnClickListener(this);
-        returnButton.setOnClickListener(this);
-        visualizerView = new VisualizerView(this);
+        mPauseButton.setOnClickListener(this);
+        mPauseButtonBackground.setOnClickListener(this);
+        mRepeatButton.setOnClickListener(this);
+        mShuffleButton.setOnClickListener(this);
+        mReturnButton.setOnClickListener(this);
+        mVisualizerView = new VisualizerView(this);
 
         // 载入歌词
         loadLyrics(getLyricsPath(mPath));
 
         mIsAlbum = true;
-        albumImageView = new MusicCoverView(this);
-        albumImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        albumImageView.setCallbacks(new MusicCoverView.Callbacks() {
+        mAlbumImageView = new MusicCoverView(this);
+        mAlbumImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        mAlbumImageView.setCallbacks(new MusicCoverView.Callbacks() {
             @Override
             public void onMorphEnd(MusicCoverView coverView) {
             }
@@ -349,11 +348,11 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 enableButton(true, true);
             }
         });
-        albumImageView.setShape(MusicCoverView.SHAPE_CIRCLE);
-        frameLayout.addView(albumImageView);
+        mAlbumImageView.setShape(MusicCoverView.SHAPE_CIRCLE);
+        mFrameLayout.addView(mAlbumImageView);
 
         // 加载专辑图片
-        albumImageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+        mAlbumImageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
                 if (!mIsLoadAlbum) {
@@ -366,13 +365,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         //专辑封面旋转
         if (mIsPlay) {
-            albumImageView.start();
+            mAlbumImageView.start();
         } else {
-            pauseButton.setImageResource(R.drawable.play_light);
+            mPauseButton.setImageResource(R.drawable.play_light);
         }
 
         // 歌词拖动事件
-        lyricView.setOnPlayerClickListener(new LyricView.OnPlayerClickListener() {
+        mLyricView.setOnPlayerClickListener(new LyricView.OnPlayerClickListener() {
             @Override
             public void onPlayerClicked(long l, String s) {
                 seekMusic((int) l);
@@ -381,20 +380,20 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         // 设置图标
         if (mIsShuffle) {
-            shuffleButton.setImageResource(R.drawable.btn_playback_shuffle_all);
+            mShuffleButton.setImageResource(R.drawable.btn_playback_shuffle_all);
         } else {
-            shuffleButton.setImageResource(R.drawable.shuffle);
+            mShuffleButton.setImageResource(R.drawable.shuffle);
         }
         if (mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
-            repeatButton.setImageResource(R.drawable.repeat);
+            mRepeatButton.setImageResource(R.drawable.repeat);
         } else if (mLoopWay == AudioPlayService.LIST_LOOP) {
-            repeatButton.setImageResource(R.drawable.btn_playback_repeat_all);
+            mRepeatButton.setImageResource(R.drawable.btn_playback_repeat_all);
         } else {
-            repeatButton.setImageResource(R.drawable.btn_playback_repeat_one);
+            mRepeatButton.setImageResource(R.drawable.btn_playback_repeat_one);
         }
 
         // 进度条事件
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
@@ -403,8 +402,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     int totalSecond = changedCurrent / 1000;
                     int minute = totalSecond / 60;
                     int second = totalSecond % 60;
-                    currentTextView.setText(String.format("%02d:%02d", minute, second));
-                    lyricView.setCurrentTimeMillis(changedCurrent);
+                    mCurrentTextView.setText(String.format("%02d:%02d", minute, second));
+                    mLyricView.setCurrentTimeMillis(changedCurrent);
                 }
             }
 
@@ -426,19 +425,19 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
 
-        frameLayout.setOnClickListener(new View.OnClickListener() {
+        mFrameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                frameLayout.removeAllViews();
+                mFrameLayout.removeAllViews();
                 if (mIsAlbum) {
-                    frameLayout.addView(visualizerView);
+                    mFrameLayout.addView(mVisualizerView);
                 } else{
-                    frameLayout.addView(albumImageView);
-                    if (mIsPlay != albumImageView.isRunning()) {
+                    mFrameLayout.addView(mAlbumImageView);
+                    if (mIsPlay != mAlbumImageView.isRunning()) {
                         if (mIsPlay) {
-                            albumImageView.start();
+                            mAlbumImageView.start();
                         } else {
-                            albumImageView.stop();
+                            mAlbumImageView.stop();
                         }
                     }
                 }
@@ -464,7 +463,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 ArrayList<Integer> list = intent.getIntegerArrayListExtra(AudioPlayService.VISUALIZER_INT_LIST);
                 long end = System.currentTimeMillis();
                 if (end - mStartTime >= 10) {
-                    visualizerView.updateData(list, intent.getIntExtra(AudioPlayService.VISUALIZER_SAMPLE_RATE_INT, 0));
+                    mVisualizerView.updateData(list, intent.getIntExtra(AudioPlayService.VISUALIZER_SAMPLE_RATE_INT, 0));
                     mStartTime = System.currentTimeMillis();
                 }
 
@@ -482,8 +481,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 switch (event) {
                     case AudioPlayService.PAUSE_EVENT:
                         synchronized (mLock) {
-                            pauseButton.setImageResource(R.drawable.play_light);
-                            albumImageView.stop();
+                            mPauseButton.setImageResource(R.drawable.play_light);
+                            mAlbumImageView.stop();
                             enableButton(true);
 
                         }
@@ -491,8 +490,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                         break;
                     case AudioPlayService.REPLAY_EVENT:
                         synchronized (mLock) {
-                            pauseButton.setImageResource(R.drawable.pause_light);
-                            albumImageView.start();
+                            mPauseButton.setImageResource(R.drawable.pause_light);
+                            mAlbumImageView.start();
                             enableButton(true);
                         }
                         mIsPlay = true;
@@ -501,16 +500,16 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                         synchronized (mLock) {
                             boolean isPlay = intent.getBooleanExtra(AudioPlayService.AUDIO_PLAY_NOW_BOOL, false);
                             if (isPlay) {
-                                pauseButton.setImageResource(R.drawable.pause_light);
-                                albumImageView.start();
+                                mPauseButton.setImageResource(R.drawable.pause_light);
+                                mAlbumImageView.start();
                                 enableButton(true);
                                 mIsPlay = true;
                             } else {
-                                pauseButton.setImageResource(R.drawable.play_light);
-                                if (albumImageView.isRunning()) {
+                                mPauseButton.setImageResource(R.drawable.play_light);
+                                if (mAlbumImageView.isRunning()) {
                                     if (mIsAlbum) {
                                         enableButton(false, true);
-                                        albumImageView.stop();
+                                        mAlbumImageView.stop();
                                     } else {
                                         enableButton(true);
                                     }

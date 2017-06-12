@@ -54,7 +54,6 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
             Manifest.permission.RECORD_AUDIO,
     };
 
-    private ListView listView;
     private List<BaseAdapter> mAdapterList;
 
     private TextView mBarTitle;
@@ -67,7 +66,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
     private BroadcastReceiver mEventReceiver;
 
-    private List<List<AudioItem>> listOfAudioItemList;
+    private List<List<AudioItem>> mListOfAudioItemList;
     private int mPlayingIndex = -1;
 
     private List<Integer> mShuffleIndex;
@@ -132,7 +131,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void playAudio(int position, boolean start, boolean shuffle, boolean forced) {
         if (forced || position != mLastPlay) {
-            List<AudioItem> list = listOfAudioItemList.get(mPlayingIndex);
+            List<AudioItem> list = mListOfAudioItemList.get(mPlayingIndex);
             AudioItem audioItem = list.get(position);
             Audio audio = audioItem.getAudio();
 
@@ -206,7 +205,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 mLastIndex = index;
             } else {
-                int listSize = listOfAudioItemList.get(mPlayingIndex).size();
+                int listSize = mListOfAudioItemList.get(mPlayingIndex).size();
                 if (next) {
                     index = (mLastPlay + 1) % listSize;
                 } else {
@@ -297,7 +296,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         List<String> titleList = new ArrayList<>();
 
         mAdapterList = new ArrayList<>();
-        listOfAudioItemList = new ArrayList<>();
+        mListOfAudioItemList = new ArrayList<>();
 
         for (int i = 0; i < titles.length; ++i) {
             List<Audio> list = AudioList.getAudioList(this, cmps[i]);
@@ -305,10 +304,10 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
             for (Audio audio : list) {
                 itemList.add(trans[i].apply(audio));
             }
-            listOfAudioItemList.add(itemList);
+            mListOfAudioItemList.add(itemList);
             final AudioListAdapter adapter = new AudioListAdapter(this, R.layout.list_music, itemList);
             mAdapterList.add(adapter);
-            listView = new ListView(this);
+            ListView listView = new ListView(this);
             listView.setAdapter(adapter);
             final int index = i;
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -445,7 +444,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                     case AudioPlayService.LIST_ORDER_EVENT:
                         mIsShuffle = intent.getBooleanExtra(AudioPlayService.LIST_SHUFFLE_BOOL, true);
                         if (mIsShuffle) {
-                            shuffleAudioIndex(listOfAudioItemList.get(mPlayingIndex), mLastPlay);
+                            shuffleAudioIndex(mListOfAudioItemList.get(mPlayingIndex), mLastPlay);
                             mLastIndex = 0;
                         }
                         saveStatus();
@@ -521,8 +520,8 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             // 弹出播放器界面
             case R.id.bar:
-                if (mPlayingIndex >= 0 && mPlayingIndex < listOfAudioItemList.size()) {
-                    List<AudioItem> audioItemList = listOfAudioItemList.get(mPlayingIndex);
+                if (mPlayingIndex >= 0 && mPlayingIndex < mListOfAudioItemList.size()) {
+                    List<AudioItem> audioItemList = mListOfAudioItemList.get(mPlayingIndex);
                     if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
                         Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                         intent.setClass(ListActivity.this, PlayerActivity.class);
