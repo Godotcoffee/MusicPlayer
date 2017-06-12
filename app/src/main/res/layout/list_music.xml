@@ -8,9 +8,11 @@
     <TextView
         android:id="@+id/classification"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
+        android:layout_height="22dp"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:paddingLeft="10dp"
-        android:background="@drawable/now_playing_controls_background_light"
+        android:background="@color/grey"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="18sp"
         android:text="" />
@@ -24,8 +26,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:maxLines="1"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
+            android:ellipsize="end"
             android:textSize="25sp"
             android:text="Title"
             android:layout_toStartOf="@+id/status" />
@@ -48,8 +49,7 @@
             android:layout_toLeftOf="@+id/duration"
             android:paddingLeft="5dp"
             android:maxLines="1"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
+            android:ellipsize="end"
             android:textSize="15sp"
             android:text="Artist"/>
 
