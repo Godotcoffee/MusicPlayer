@@ -441,7 +441,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                             mLastIndex = 0;
                         }
                         break;
-                    case AudioPlayService.CHANEG_LOOP_EVENT:
+                    case AudioPlayService.CHANGE_LOOP_EVENT:
                         mLoopWay = intent.getIntExtra(
                                 AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
                         break;
@@ -511,15 +511,17 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             // 弹出播放器界面
             case R.id.bar:
-                List<AudioItem> audioItemList = listOfAudioItemList.get(mPlayingIndex);
-                if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
-                    Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
-                    intent.setClass(ListActivity.this, PlayerActivity.class);
-                    intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
-                    intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
-                    intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);
+                if (mPlayingIndex >= 0 && mPlayingIndex < listOfAudioItemList.size()) {
+                    List<AudioItem> audioItemList = listOfAudioItemList.get(mPlayingIndex);
+                    if (mLastPlay >= 0 && mLastPlay < audioItemList.size()) {
+                        Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
+                        intent.setClass(ListActivity.this, PlayerActivity.class);
+                        intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
+                        intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
+                        intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
+                        startActivity(intent);
+                        overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);
+                    }
                 }
                 break;
             // 暂停按钮

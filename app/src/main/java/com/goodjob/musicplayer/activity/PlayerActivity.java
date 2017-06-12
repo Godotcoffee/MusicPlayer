@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +54,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private String mArtist;
     private int mDuration;
     private int mAlbumId = -1;
+    private String mPath;
 
     private boolean onDrag = false;
     private boolean mIsShuffle;
@@ -78,6 +80,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         synchronized (mLock) {
             String title = bundle.getString(AudioPlayService.AUDIO_TITLE_STR);
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
+            String path = bundle.getString(AudioPlayService.AUDIO_PATH_STR);
             int albumId = bundle.getInt(AudioPlayService.AUDIO_ALBUM_ID_INT, -1);
 
             if (mTitle == null || !mTitle.equals(title)) {
@@ -95,6 +98,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 } else {
                     albumImageView.setImageResource(R.drawable.no_album);
                 }
+            }
+
+            if (mPath == null || !mPath.equals(path)) {
+                loadLyrics(getLyricsPath(mPath = path));
             }
 
             // 特殊处理，停止旋转需要时间
@@ -167,8 +174,25 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         startService(intent);
     }
 
-    private void stopMusic() {
+    /**
+     * 转换音乐路径为歌词路径
+     * @param musicPath
+     * @return
+     */
+    private String getLyricsPath(String musicPath) {
+        if (musicPath == null) {
+            return null;
+        }
+        return musicPath.replaceAll(".[^.]*$", ".lrc");
+    }
 
+    /**
+     * 根据路径载入歌词
+     * @param lyricsPath
+     */
+    private void loadLyrics(String lyricsPath) {
+        File saveFile = new File(lyricsPath);
+        lyricView.setLyricFile(saveFile);
     }
 
     /**
@@ -226,9 +250,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
+        mIsShuffle = getIntent().getBooleanExtra(AudioPlayService.LIST_ORDER_BOOL, false);
+        mLoopWay = getIntent().getIntExtra(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
+        mPath = getIntent().getStringExtra(AudioPlayService.AUDIO_PATH_STR);
+        mIsPlay = getIntent().getBooleanExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
+
         findViewById(R.id.nextButton).setOnClickListener(this);
         findViewById(R.id.previousButton).setOnClickListener(this);
-
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         currentTextView = (TextView) findViewById(R.id.current);
@@ -259,6 +287,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         mIsAlbum = true;
         albumImageView = new MusicCoverView(this);
+        albumImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         albumImageView.setCallbacks(new MusicCoverView.Callbacks() {
             @Override
             public void onMorphEnd(MusicCoverView coverView) {
@@ -272,8 +301,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         albumImageView.setShape(MusicCoverView.SHAPE_CIRCLE);
         frameLayout.addView(albumImageView);
 
-        mIsPlay = getIntent().getBooleanExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
-
+        // 载入歌词
+        loadLyrics(getLyricsPath(mPath));
         //专辑封面旋转
         if (mIsPlay) {
             albumImageView.start();
@@ -281,8 +310,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             pauseButton.setImageResource(R.drawable.play_light);
         }
 
-        mIsShuffle = getIntent().getBooleanExtra(AudioPlayService.LIST_ORDER_BOOL, false);
-        mLoopWay = getIntent().getIntExtra(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
 
         // 设置图标
         if (mIsShuffle) {
@@ -298,10 +325,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             repeatButton.setImageResource(R.drawable.btn_playback_repeat_one);
         }
-
-        File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
-        File saveFile = new File(sdCardDir, "GARNiDELiA.lrc");
-        lyricView.setLyricFile(saveFile);
 
         // 进度条事件
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

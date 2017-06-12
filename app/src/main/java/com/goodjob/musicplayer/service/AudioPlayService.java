@@ -17,7 +17,6 @@ import android.util.Log;
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.activity.ListActivity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class AudioPlayService extends Service {
@@ -87,7 +86,7 @@ public class AudioPlayService extends Service {
     public static final String LIST_ORDER_EVENT = "list_order_event";
 
     /** 开启列表顺序播放 */
-    public static final String CHANEG_LOOP_EVENT = "change_loop_event";
+    public static final String CHANGE_LOOP_EVENT = "change_loop_event";
 
     /** 音频标题属性 */
     public static final String AUDIO_TITLE_STR = "title";
@@ -143,7 +142,6 @@ public class AudioPlayService extends Service {
 
     /** 频谱分析对象 */
     private Visualizer mVisualizer;
-
     private Equalizer mEqualizer;
 
     /** 是否有音乐在播放中 */
@@ -151,6 +149,9 @@ public class AudioPlayService extends Service {
 
     /** 播放中的音乐是否暂停 */
     private boolean mIsPause;
+
+    /** 路径 */
+    private String mPath;
 
     /** 信息通知管理 */
     //private NotificationManager mNotificationManager;
@@ -173,6 +174,7 @@ public class AudioPlayService extends Service {
                 isPlaying = mMediaPlayer.isPlaying();
             }
         }
+        intent.putExtra(AUDIO_PATH_STR, mPath);
         intent.putExtra(AUDIO_CURRENT_INT, current);
         intent.putExtra(AUDIO_DURATION_INT, duration);
         intent.putExtra(AUDIO_IS_PLAYING_BOOL, isPlaying);
@@ -297,7 +299,7 @@ public class AudioPlayService extends Service {
             // 播放
             case PLAY_ACTION:
                 // 播放路径
-                String path = intent.getStringExtra(AUDIO_PATH_STR);
+                mPath = intent.getStringExtra(AUDIO_PATH_STR);
                 // 标题
                 mAudioTitle = intent.getStringExtra(AUDIO_TITLE_STR);
                 // 歌手
@@ -309,7 +311,7 @@ public class AudioPlayService extends Service {
                 try {
                     synchronized (mLock) {
                         mMediaPlayer.reset();
-                        mMediaPlayer.setDataSource(path);
+                        mMediaPlayer.setDataSource(mPath);
                         mMediaPlayer.prepare();
                         if (playNow) {
                             mMediaPlayer.start();
@@ -406,7 +408,7 @@ public class AudioPlayService extends Service {
                 break;
             // 切换循环方式
             case CHANGE_LOOP_ACTION:
-                sendAudioEvent(CHANEG_LOOP_EVENT, intent.getExtras());
+                sendAudioEvent(CHANGE_LOOP_EVENT, intent.getExtras());
                 break;
         }
 
