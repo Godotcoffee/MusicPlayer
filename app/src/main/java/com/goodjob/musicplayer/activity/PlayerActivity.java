@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -17,7 +16,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.andremion.music.MusicCoverView;
 import com.goodjob.musicplayer.R;
@@ -201,7 +199,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private void changeListOrder() {
         Intent intent = new Intent(this, AudioPlayService.class);
         intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.CHANGE_LIST_SHUFFLE_ACTION);
-        intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle = !mIsShuffle);
+        intent.putExtra(AudioPlayService.LIST_SHUFFLE_BOOL, mIsShuffle = !mIsShuffle);
         startService(intent);
         //Toast.makeText(this, "切换到" + (mIsShuffle ? "随机播放" : "顺序播放"), Toast.LENGTH_SHORT).show();
         if (mIsShuffle) {
@@ -250,7 +248,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        mIsShuffle = getIntent().getBooleanExtra(AudioPlayService.LIST_ORDER_BOOL, false);
+        mIsShuffle = getIntent().getBooleanExtra(AudioPlayService.LIST_SHUFFLE_BOOL, false);
         mLoopWay = getIntent().getIntExtra(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
         mPath = getIntent().getStringExtra(AudioPlayService.AUDIO_PATH_STR);
         mIsPlay = getIntent().getBooleanExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, false);
@@ -318,6 +316,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             shuffleButton.setImageResource(R.drawable.shuffle);
         }
 
+        Log.d("repeat", mLoopWay+"");
         if (mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
             repeatButton.setImageResource(R.drawable.repeat);
         } else if (mLoopWay == AudioPlayService.LIST_LOOP) {

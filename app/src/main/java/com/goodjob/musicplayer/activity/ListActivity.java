@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -35,12 +37,16 @@ import com.goodjob.musicplayer.util.AudioList;
 import com.goodjob.musicplayer.util.AudioToAudioItem;
 import com.goodjob.musicplayer.util.MediaUtils;
 
+import net.sourceforge.pinyin4j.PinyinHelper;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class ListActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String SHARED_PREFERENCES_NAME = "music_player";
+
     private static final int PERMISSION_REQUEST_CODE = 1;
     private static String[] permissionArray = new String[] {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -72,6 +78,20 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
     private boolean mIsShuffle = false;
 
     private int mLoopWay;
+
+    private static String getPinyinString(String str) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < str.length(); ++i) {
+            char ch = str.charAt(i);
+            String[] pinyin = PinyinHelper.toHanyuPinyinStringArray(ch);
+            if (pinyin != null) {
+                builder.append(pinyin[0]);
+            } else {
+                builder.append(ch);
+            }
+        }
+        return builder.toString();
+    }
 
     private Intent getAudioIntent(Audio audio) {
         Intent intent = new Intent();
@@ -197,13 +217,15 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                 new Comparator<Audio>() {
                     @Override
                     public int compare(Audio o1, Audio o2) {
-                        return o1.getTitle().compareTo(o2.getTitle());
+                        return getPinyinString(o1.getTitle())
+                                .compareToIgnoreCase(getPinyinString(o2.getTitle()));
                     }
                 },
                 new Comparator<Audio>() {
                     @Override
                     public int compare(Audio o1, Audio o2) {
-                        int res = o1.getArtist().compareTo(o2.getArtist());
+                        int res = getPinyinString(o1.getArtist())
+                                .compareToIgnoreCase(getPinyinString(o2.getArtist()));
                         if (res != 0) {
                             return res;
                         }
@@ -213,7 +235,8 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                 new Comparator<Audio>() {
                     @Override
                     public int compare(Audio o1, Audio o2) {
-                        int res = o1.getAlbum().compareTo(o2.getAlbum());
+                        int res = getPinyinString(o1.getAlbum())
+                                .compareToIgnoreCase(getPinyinString(o2.getAlbum()));
                         if (res != 0) {
                             return res;
                         }
@@ -227,7 +250,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public AudioItem apply(Audio audio) {
                         AudioItem audioItem = new AudioItem(audio);
-                        String title = audio.getTitle();
+                        String title = getPinyinString(audio.getTitle()).toUpperCase();
                         audioItem.setClassficationId(title.length() > 0 ? title.charAt(0) : -1);
                         audioItem.setClassficationName(title.length() > 0 ? title.charAt(0) + "" : "");
                         return audioItem;
@@ -352,7 +375,11 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLoopWay = AudioPlayService.LIST_NOT_LOOP;
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        mLoopWay = sharedPreferences.getInt(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
+        Log.d("loopway", mLoopWay + "");
+        mIsShuffle = sharedPreferences.getBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, false);
+
         setContentView(R.layout.activity_list);
 
         View barView = findViewById(R.id.bar);
@@ -435,7 +462,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                         enableButton(true);
                         break;
                     case AudioPlayService.LIST_ORDER_EVENT:
-                        mIsShuffle = intent.getBooleanExtra(AudioPlayService.LIST_ORDER_BOOL, true);
+                        mIsShuffle = intent.getBooleanExtra(AudioPlayService.LIST_SHUFFLE_BOOL, true);
                         if (mIsShuffle) {
                             shuffleAudioIndex(listOfAudioItemList.get(mPlayingIndex), mLastPlay);
                             mLastIndex = 0;
@@ -469,9 +496,16 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        Log.d("loop", mLoopWay + " " + mIsShuffle);
         stopService(new Intent(this, AudioPlayService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mEventReceiver);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        //editor.clear();
+        editor.putInt(AudioPlayService.LOOP_WAY_INT, mLoopWay);
+        editor.putBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, mIsShuffle);
+        editor.apply();
+        super.onDestroy();
     }
 
     @Override
@@ -517,7 +551,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                         Intent intent = getAudioIntent(audioItemList.get(mLastPlay).getAudio());
                         intent.setClass(ListActivity.this, PlayerActivity.class);
                         intent.putExtra(AudioPlayService.AUDIO_IS_PLAYING_BOOL, mIsPlaying);
-                        intent.putExtra(AudioPlayService.LIST_ORDER_BOOL, mIsShuffle);
+                        intent.putExtra(AudioPlayService.LIST_SHUFFLE_BOOL, mIsShuffle);
                         intent.putExtra(AudioPlayService.LOOP_WAY_INT, mLoopWay);
                         startActivity(intent);
                         overridePendingTransition(R.anim.slide_in_top, R.anim.slide_out_top);

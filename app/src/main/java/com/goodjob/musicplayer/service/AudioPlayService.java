@@ -116,7 +116,7 @@ public class AudioPlayService extends Service {
     public static final String AUDIO_SEEK_POS_INT = "seekPos";
 
     /** 列表顺序 */
-    public static final String LIST_ORDER_BOOL = "list_is_order";
+    public static final String LIST_SHUFFLE_BOOL = "list_is_order";
 
     /** 循环方式 */
     public static final String LOOP_WAY_INT = "loop_way";

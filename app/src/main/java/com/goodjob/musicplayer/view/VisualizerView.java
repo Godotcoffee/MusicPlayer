@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
 import java.util.Arrays;
@@ -23,6 +24,8 @@ public class VisualizerView extends View {
     private Paint mBlockPaint = new Paint();
 
     private int mBlockWidth = 4;
+
+    LinearGradient mLinearGradient;
 
     private static final int[] SAMPLE_HZ = new int []{
             0, 50, 94, 129, 176, 241, 331, 453, 620, 850, 1100, 1400, 1600, 2100, 3000, 4100, 6000, 8000, 11000, 15000, 19000
@@ -49,6 +52,10 @@ public class VisualizerView extends View {
         mBlockPaint.setAntiAlias(true);
 
         Arrays.fill(mLastHeight, -1);
+
+        mLinearGradient = new LinearGradient(0, 0, 0, mRect.bottom,
+                mColorGradient,
+                null, LinearGradient.TileMode.CLAMP);
     }
 
     public void updateData(List<Integer> fft, int sampleRate) {
@@ -89,16 +96,17 @@ public class VisualizerView extends View {
         if (mFFT == null) {
             return;
         }
-
-        mRect.set(0, 0, getWidth(), getHeight());
+        if (mRect.width() != getWidth() || mRect.height() != getHeight()) {
+            mRect.set(0, 0, getWidth(), getHeight());
+            mLinearGradient = new LinearGradient(0, 0, 0, mRect.bottom,
+                    mColorGradient,
+                    null, LinearGradient.TileMode.CLAMP);
+        }
 
         float width = mRect.width() * 1.0f / SAMPLE_HZ.length;
-        LinearGradient linearGradient = new LinearGradient(0, 0, 0, mRect.bottom,
-                mColorGradient,
-                null, LinearGradient.TileMode.CLAMP);
 
         mMainPaint.setStrokeWidth(width / 2);
-        mMainPaint.setShader(linearGradient);
+        mMainPaint.setShader(mLinearGradient);
         for (int i = 0; i < SAMPLE_HZ.length; ++i) {
             double val = getAverageFromFFT(mFFT, (int) Math.round(SAMPLE_HZ[i] * 1.0 / mSampleRate * mFFT.size()));
             val = 32 * Math.log10(val / 8);
