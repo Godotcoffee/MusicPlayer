@@ -17,8 +17,11 @@
         android:layout_below="@id/title_home"
         android:layout_above="@+id/linear_layout">
         <android.support.v4.view.PagerTitleStrip
+            android:id="@+id/title_strip"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:textAlignment="center"/>
     </android.support.v4.view.ViewPager>
 
     <!--<ListView

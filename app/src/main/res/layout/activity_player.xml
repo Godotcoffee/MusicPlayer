@@ -10,20 +10,19 @@
 
     <include layout="@layout/title_bar"
         android:id="@+id/title_bar"
-        android:layout_height="38dp"
-        android:layout_width="384dp"
+        android:layout_height="39dp"
+        android:layout_width="397dp"
         android:layout_marginRight="0dp"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/artist"
         android:layout_marginLeft="0dp"
-
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="0dp"
         app:layout_constraintVertical_bias="0.0"
-        app:layout_constraintHorizontal_bias="0.4"
-        tools:layout_editor_absoluteX="7dp">
+        app:layout_constraintHorizontal_bias="0.375"
+        tools:layout_editor_absoluteX="-11dp">
     </include>
 
     <SeekBar

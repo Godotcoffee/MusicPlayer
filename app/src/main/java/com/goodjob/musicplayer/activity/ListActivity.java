@@ -6,17 +6,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.PermissionChecker;
+import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 
 public class ListActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_REQUEST_CODE = 1;
@@ -57,6 +56,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
     private ImageButton mBarPauseButton;
     private ImageButton mBarNextButton;
     private View mBarPauseBackground;
+    private PagerTitleStrip mPaperTitleStrip;
 
     private BroadcastReceiver mEventReceiver;
 
@@ -362,6 +362,10 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         mBarPauseButton = (ImageButton) barView.findViewById(R.id.home_pauseButton);
         mBarNextButton = (ImageButton) barView.findViewById(R.id.home_nextButton);
         mBarPauseBackground = barView.findViewById(R.id.homebar_background);
+        mPaperTitleStrip = (PagerTitleStrip) findViewById(R.id.title_strip);
+
+        //设置tab栏字体
+        mPaperTitleStrip.setTextColor(Color.rgb(255, 255, 255));
 
         mBarTitle.setHorizontallyScrolling(true);
         mBarTitle.setSelected(true);

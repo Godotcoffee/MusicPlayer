@@ -11,7 +11,7 @@
         android:layout_height="20dp"
         android:paddingLeft="10dp"
         android:background="@drawable/now_playing_controls_background_light"
-        android:textColor="@color/blue"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="18sp"
         android:text="" />
     <RelativeLayout
