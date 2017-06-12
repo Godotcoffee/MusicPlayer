@@ -7,8 +7,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.goodjob.musicplayer.entity.Audio;
 
@@ -101,20 +103,19 @@ public class MediaUtils {
         return albumArt;
     }
 
-    public static BitmapDrawable getAlbumBitmapDrawable(Context context, Audio audio) {
+    public static Bitmap getAlbumBitmapDrawable(Audio audio) {
         if (audio == null) {
             return null;
         }
-        return getAlbumBitmapDrawable(context, audio.getAlbumId());
+        return getAlbumBitmapDrawable(audio.getPath());
     }
 
-    public static BitmapDrawable getAlbumBitmapDrawable(Context context, int albumId) {
-        String albumArt = getAlbumArt(context, albumId);
-        if (albumArt == null) {
-            return null;
-        }
-        Bitmap bitmap = BitmapFactory.decodeFile(albumArt);
-        BitmapDrawable drawable = new BitmapDrawable(context.getResources(), bitmap);
-        return drawable;
+    public static Bitmap getAlbumBitmapDrawable(String path) {
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(path);
+
+        byte[] art = mediaMetadataRetriever.getEmbeddedPicture();
+
+        return art != null ? BitmapFactory.decodeByteArray(art, 0, art.length) : null;
     }
 }

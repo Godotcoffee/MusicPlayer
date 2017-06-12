@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,8 +11,8 @@
 
     <include layout="@layout/title_bar"
         android:id="@+id/title_bar"
-        android:layout_height="39dp"
-        android:layout_width="397dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
         android:layout_marginRight="0dp"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginBottom="8dp"
@@ -25,212 +26,215 @@
         tools:layout_editor_absoluteX="-11dp">
     </include>
 
-    <SeekBar
-        android:id="@+id/seekBar"
-        android:layout_width="238dp"
-        android:layout_height="33dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="95dp"
-        app:layout_constraintTop_toBottomOf="@+id/album" />
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="59dp">
 
-    <TextView
-        android:id="@+id/current"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="00:00"
-        android:layout_marginStart="30dp"
-        app:layout_constraintRight_toLeftOf="@+id/seekBar"
-        android:layout_marginRight="8dp"
-        android:layout_marginLeft="30dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.38"
-        app:layout_constraintTop_toTopOf="@+id/seekBar"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/seekBar"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintVertical_bias="1.0"
-        android:layout_marginEnd="8dp" />
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="238dp"
+            android:layout_height="33dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/toolbar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
 
-    <TextView
-        android:id="@+id/duration"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="00:00"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintTop_toTopOf="@+id/seekBar"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/seekBar"
-        android:layout_marginBottom="8dp"
-        android:layout_marginRight="32dp"
-        app:layout_constraintVertical_bias="1.0"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/seekBar"
-        android:layout_marginLeft="8dp"
-        android:layout_marginStart="8dp" />
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="260dp"
-        android:layout_height="31dp"
-        android:textAlignment="center"
-        android:maxLines="1"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:focusableInTouchMode="true"
-        android:textSize="25sp"
-        android:text="TextView"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/album"
-        app:layout_constraintVertical_bias="0.461" />
-
-    <TextView
-        android:id="@+id/artist"
-        android:layout_width="230dp"
-        android:layout_height="29dp"
-        android:maxLines="1"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:focusableInTouchMode="true"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        android:text="TextView"
-        android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@+id/title"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/album"
-        app:layout_constraintVertical_bias="0.884" />
-
-    <LinearLayout
-        android:id="@+id/toolbar"
-        android:layout_width="333dp"
-        android:layout_height="76dp"
-        android:layout_below="@+id/album"
-        android:layout_marginRight="8dp"
-        android:orientation="horizontal"
-        android:paddingBottom="15dp"
-        app:layout_constraintHorizontal_bias="0.604"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/seekBar"
-        app:layout_constraintVertical_bias="0.789"
-        android:layout_marginEnd="8dp">
-
-        <ImageButton
-            android:id="@+id/shuffleButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:background="?android:selectableItemBackground"
-            android:scaleType="centerInside"
-            android:src="@drawable/shuffle" />
-
-        <ImageButton
-            android:id="@+id/previousButton"
+        <TextView
+            android:id="@+id/current"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:alpha="0.9"
-            android:background="?android:selectableItemBackground"
-            android:src="@drawable/btn_playback_previous" />
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="30dp"
+            android:text="00:00"
+            app:layout_constraintRight_toLeftOf="@+id/seekBar"
+            android:layout_marginRight="8dp"
+            app:layout_constraintTop_toTopOf="@+id/seekBar"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/seekBar"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintLeft_toLeftOf="parent" />
 
-        <RelativeLayout
-            android:id="@+id/playPauseButtonBackground"
-            android:layout_width="64dp"
-            android:layout_height="match_parent"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
-            android:background="@drawable/shadowed_circle_red"
-            android:clickable="false"
-            tools:layout_editor_absoluteX="160dp"
-            tools:layout_editor_absoluteY="431dp"
-            android:layout_weight="0.02">
+        <TextView
+            android:id="@+id/duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="8dp"
+            android:text="00:00"
+            app:layout_constraintTop_toTopOf="@+id/seekBar"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/seekBar"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintLeft_toRightOf="@+id/seekBar"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="260dp"
+            android:layout_height="31dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:ellipsize="marquee"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:maxLines="1"
+            android:text="TextView"
+            android:textAlignment="center"
+            android:textSize="25sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/artist"
+            android:layout_width="230dp"
+            android:layout_height="29dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:ellipsize="marquee"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:maxLines="1"
+            android:text="TextView"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title" />
+
+        <LinearLayout
+            android:id="@+id/toolbar"
+            android:layout_width="333dp"
+            android:layout_height="76dp"
+            android:layout_below="@+id/album"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+
+            android:layout_marginRight="8dp"
+            android:orientation="horizontal"
+            android:paddingBottom="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent">
 
             <ImageButton
-                android:id="@+id/playPauseButton"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_centerInParent="true"
-                android:adjustViewBounds="true"
-                android:background="#00000000"
+                android:id="@+id/shuffleButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:background="?android:selectableItemBackground"
                 android:scaleType="centerInside"
-                android:src="@drawable/pause_light"
-                android:visibility="visible" />
+                android:src="@drawable/shuffle" />
 
-        </RelativeLayout>
+            <ImageButton
+                android:id="@+id/previousButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:alpha="0.9"
+                android:background="?android:selectableItemBackground"
+                android:src="@drawable/btn_playback_previous" />
 
-        <ImageButton
-            android:id="@+id/nextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:alpha="0.9"
-            android:background="?android:selectableItemBackground"
-            android:src="@drawable/btn_playback_next" />
+            <RelativeLayout
+                android:id="@+id/playPauseButtonBackground"
+                android:layout_width="64dp"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:layout_weight="0.02"
+                android:background="@drawable/shadowed_circle_red"
+                android:clickable="false"
+                tools:layout_editor_absoluteX="160dp"
+                tools:layout_editor_absoluteY="431dp">
+
+                <ImageButton
+                    android:id="@+id/playPauseButton"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerInParent="true"
+                    android:adjustViewBounds="true"
+                    android:background="#00000000"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/pause_light"
+                    android:visibility="visible" />
+
+            </RelativeLayout>
+
+            <ImageButton
+                android:id="@+id/nextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:alpha="0.9"
+                android:background="?android:selectableItemBackground"
+                android:src="@drawable/btn_playback_next" />
 
 
-        <ImageButton
-            android:id="@+id/repeatButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:background="?android:selectableItemBackground"
-            android:scaleType="centerInside"
-            android:src="@drawable/repeat" />
-    </LinearLayout>
+            <ImageButton
+                android:id="@+id/repeatButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:background="?android:selectableItemBackground"
+                android:scaleType="centerInside"
+                android:src="@drawable/repeat" />
+        </LinearLayout>
 
-    <me.zhengken.lyricview.LyricView
-        android:id="@+id/lyric_view"
-        android:layout_width="325dp"
-        android:layout_height="52dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/seekBar"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.511"
-        app:highlightColor="@color/colorPrimary"/>
+        <me.zhengken.lyricview.LyricView
+            android:id="@+id/lyric_view"
+            android:layout_width="323dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:maxHeight="200dp"
+            android:minHeight="20dp"
+            app:highlightColor="@color/colorPrimaryDark"
+            app:hint="平凡的时光，是你平凡的模样"
+            app:hintColor="@color/colorPrimaryDark"
+            app:layout_constraintBottom_toTopOf="@+id/seekBar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/album"
+            app:layout_constraintVertical_bias="0.0"
+            app:lineSpace="10dp"
+            tools:layout_editor_absoluteX="32dp"
+            tools:layout_editor_absoluteY="320dp" />
 
-    <FrameLayout
-        android:id="@+id/album"
-        android:layout_width="230dp"
-        android:layout_height="230dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="120dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/no_album"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:color/background_light" />
-</android.support.constraint.ConstraintLayout>
+        <FrameLayout
+            android:id="@+id/album"
+            android:layout_width="230dp"
+            android:layout_height="230dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/no_album"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/artist"
+            app:srcCompat="@android:color/background_light" />
+    </android.support.constraint.ConstraintLayout>
+</LinearLayout>

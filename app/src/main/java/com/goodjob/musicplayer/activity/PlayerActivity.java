@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -11,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -24,11 +27,15 @@ import com.goodjob.musicplayer.util.MediaUtils;
 import com.goodjob.musicplayer.view.VisualizerView;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import me.zhengken.lyricview.LyricView;
 
 public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String DEFAULT_LYRICS_STRING = "[ti:生活很美好]";
+
     private SeekBar seekBar;
     private TextView currentTextView;
     private TextView durationTextView;
@@ -51,18 +58,18 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private String mTitle;
     private String mArtist;
     private int mDuration;
-    private int mAlbumId = -1;
     private String mPath;
 
     private boolean onDrag = false;
     private boolean mIsShuffle;
     private boolean mIsPlay;
 
+    private boolean mIsLoadAlbum = false;
+
     private int mLoopWay;
 
     private boolean mIsAlbum;
 
-    private boolean mIsLastRunning;
 
     private BroadcastReceiver mPlayingReceiver;
     private BroadcastReceiver mVisualizerReceiver;
@@ -87,19 +94,10 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             if (mArtist == null || !mArtist.equals(artist)) {
                 artistTextView.setText(mArtist = artist);
             }
-            if (mAlbumId != albumId) {
-                mAlbumId = albumId;
-                BitmapDrawable drawable = MediaUtils.getAlbumBitmapDrawable(this, mAlbumId);
-                Log.d("pic", drawable + "");
-                if (drawable != null) {
-                    albumImageView.setImageDrawable(drawable);
-                } else {
-                    albumImageView.setImageResource(R.drawable.no_album);
-                }
-            }
 
             if (mPath == null || !mPath.equals(path)) {
                 loadLyrics(getLyricsPath(mPath = path));
+                updateAlbum(mPath);
             }
 
             // 特殊处理，停止旋转需要时间
@@ -140,6 +138,30 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    // 更新专辑图片
+    private void updateAlbum(String path) {
+        Bitmap bitmap = MediaUtils.getAlbumBitmapDrawable(path);
+        if (bitmap != null) {
+            // 进行缩放处理
+            int viewWidth = frameLayout.getWidth();
+            int viewHeight = frameLayout.getHeight();
+            int imageWidth = bitmap.getWidth();
+            int imageHeight = bitmap.getHeight();
+
+            float scaleWidth = viewWidth * 1.0f / imageWidth;
+            float scaleHeight = viewHeight * 1.0f / imageHeight;
+
+            float scale = Math.max(1.0f, Math.max(scaleWidth, scaleHeight));
+
+            Matrix matrix = new Matrix();
+            matrix.postScale(scale, scale);
+            Bitmap resize = Bitmap.createBitmap(bitmap, 0, 0, imageWidth, imageHeight, matrix, true);
+            albumImageView.setImageDrawable(new BitmapDrawable(getResources(), resize));
+        } else {
+            albumImageView.setImageResource(R.drawable.no_album);
+        }
+    }
+
     // 下一首
     private void nextMusic() {
         Intent intent = new Intent(this, AudioPlayService.class);
@@ -154,18 +176,21 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         startService(intent);
     }
 
+    // seek歌曲
+    private void seekMusic(int seekTo) {
+        Intent intent = new Intent(PlayerActivity.this, AudioPlayService.class);
+        intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.SEEK_ACTION);
+        intent.putExtra(AudioPlayService.AUDIO_SEEK_POS_INT, seekTo);
+        startService(intent);
+    }
+
     // 切换暂停
     private void pauseMusic() {
         Intent intent = new Intent(this, AudioPlayService.class);
-        //Log.d("isplay", mIsPlay + "");
         if (mIsPlay) {
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.PAUSE_ACTION);
-            //mIsPlay = false;
-            //pauseButton.setImageResource(R.drawable.pause_light);
         } else {
             intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.REPLAY_ACTION);
-            //mIsPlay = true;
-            //pauseButton.setImageResource(R.drawable.play_light);
         }
 
         enableButton(false, false);
@@ -174,7 +199,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     /**
      * 转换音乐路径为歌词路径
-     * @param musicPath
+     * @param musicPath 音乐路径
      * @return
      */
     private String getLyricsPath(String musicPath) {
@@ -186,11 +211,33 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     /**
      * 根据路径载入歌词
-     * @param lyricsPath
+     * @param lyricsPath 歌词路径
      */
     private void loadLyrics(String lyricsPath) {
-        File saveFile = new File(lyricsPath);
-        lyricView.setLyricFile(saveFile);
+        File file = new File(lyricsPath);
+        if (!file.exists()) {
+            // 造一个假文件
+            file = new File(getCacheDir(), "default.lrc");
+            if (!file.exists()) {
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(file);
+                    fos.write(DEFAULT_LYRICS_STRING.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+            }
+        }
+        lyricView.setLyricFile(file);
     }
 
     /**
@@ -209,6 +256,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    /**
+     * 切换循环方式
+     */
     public void changeLoopWay() {
         Intent intent = new Intent(this, AudioPlayService.class);
         intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.CHANGE_LOOP_ACTION);
@@ -283,6 +333,9 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         returnButton.setOnClickListener(this);
         visualizerView = new VisualizerView(this);
 
+        // 载入歌词
+        loadLyrics(getLyricsPath(mPath));
+
         mIsAlbum = true;
         albumImageView = new MusicCoverView(this);
         albumImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -299,8 +352,18 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         albumImageView.setShape(MusicCoverView.SHAPE_CIRCLE);
         frameLayout.addView(albumImageView);
 
-        // 载入歌词
-        loadLyrics(getLyricsPath(mPath));
+        // 加载专辑图片
+        albumImageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (!mIsLoadAlbum) {
+                    updateAlbum(mPath);
+                    mIsLoadAlbum = true;
+                }
+                return true;
+            }
+        });
+
         //专辑封面旋转
         if (mIsPlay) {
             albumImageView.start();
@@ -308,6 +371,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             pauseButton.setImageResource(R.drawable.play_light);
         }
 
+        // 歌词拖动事件
+        lyricView.setOnPlayerClickListener(new LyricView.OnPlayerClickListener() {
+            @Override
+            public void onPlayerClicked(long l, String s) {
+                seekMusic((int) l);
+            }
+        });
 
         // 设置图标
         if (mIsShuffle) {
@@ -315,8 +385,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             shuffleButton.setImageResource(R.drawable.shuffle);
         }
-
-        Log.d("repeat", mLoopWay+"");
         if (mLoopWay == AudioPlayService.LIST_NOT_LOOP) {
             repeatButton.setImageResource(R.drawable.repeat);
         } else if (mLoopWay == AudioPlayService.LIST_LOOP) {
@@ -336,6 +404,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     int minute = totalSecond / 60;
                     int second = totalSecond % 60;
                     currentTextView.setText(String.format("%02d:%02d", minute, second));
+                    lyricView.setCurrentTimeMillis(changedCurrent);
                 }
             }
 
@@ -350,10 +419,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int min = 0, max = seekBar.getMax();
                 int changedCurrent = (int) (mDuration * 1.0 / (max - min) * seekBar.getProgress());
-                Intent intent = new Intent(PlayerActivity.this, AudioPlayService.class);
-                intent.putExtra(AudioPlayService.ACTION_KEY, AudioPlayService.SEEK_ACTION);
-                intent.putExtra(AudioPlayService.AUDIO_SEEK_POS_INT, changedCurrent);
-                startService(intent);
+                seekMusic(changedCurrent);
                 synchronized (mLock) {
                     onDrag = false;
                 }
@@ -365,7 +431,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             public void onClick(View v) {
                 frameLayout.removeAllViews();
                 if (mIsAlbum) {
-                    mIsLastRunning = albumImageView.isRunning();
                     frameLayout.addView(visualizerView);
                 } else{
                     frameLayout.addView(albumImageView);
@@ -435,7 +500,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     case AudioPlayService.PLAY_EVENT:
                         synchronized (mLock) {
                             boolean isPlay = intent.getBooleanExtra(AudioPlayService.AUDIO_PLAY_NOW_BOOL, false);
-                            Log.d("plat", isPlay + "");
                             if (isPlay) {
                                 pauseButton.setImageResource(R.drawable.pause_light);
                                 albumImageView.start();

@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -93,6 +94,22 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         return builder.toString();
     }
 
+    private void saveStatus() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        //editor.clear();
+        editor.putInt(AudioPlayService.LOOP_WAY_INT, mLoopWay);
+        editor.putBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, mIsShuffle);
+        editor.apply();
+    }
+
+    private void readStatus() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        mLoopWay = sharedPreferences.getInt(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
+        Log.d("loopway", mLoopWay + "");
+        mIsShuffle = sharedPreferences.getBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, false);
+    }
+
     private Intent getAudioIntent(Audio audio) {
         Intent intent = new Intent();
         intent.putExtra(AudioPlayService.AUDIO_PATH_STR, audio.getPath());
@@ -135,9 +152,9 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
             mBarArtist.setText(audio.getArtist());
 
-            BitmapDrawable bitmapDrawable = MediaUtils.getAlbumBitmapDrawable(this, audio);
-            if (bitmapDrawable != null) {
-                mBarAlbum.setImageDrawable(bitmapDrawable);
+            Bitmap bitmap = MediaUtils.getAlbumBitmapDrawable(audio);
+            if (bitmap != null) {
+                mBarAlbum.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
             } else {
                 mBarAlbum.setImageResource(R.drawable.no_album);
             }
@@ -308,39 +325,6 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
         viewPager.setAdapter(new ViewPagerAdapter(titleList, viewList));
-
-        /*List<Audio> audioList = AudioList.getAudioList(this);
-        audioItemList = new AudioItemList(audioList);
-        mShuffleIndex = new ArrayList<>();
-        for (int i = 0; i < audioList.size(); ++i) {
-            mShuffleIndex.add(i);
-        }
-
-        listView = new ListView(this);
-        adapter = new AudioListAdapter(this, R.layout.list_music, audioItemList);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("click", "abc");
-                playAudio(position, true, true, false);
-                Audio audio = audioItemList.get(position);
-                Intent activityIntent = new Intent();
-                //startActivity(activityIntent);
-                adapter.notifyDataSetChanged();
-            }
-        });
-
-        viewList.add(listView);
-        TextView tv = new TextView(this);
-        tv.setText("abc");
-        viewList.add(tv);
-
-        titleList.add("Audio");
-        titleList.add("Album");
-
-        ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-        viewPager.setAdapter(new ViewPagerAdapter(titleList, viewList));*/
     }
 
     private void pause() {
@@ -375,12 +359,9 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        mLoopWay = sharedPreferences.getInt(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
-        Log.d("loopway", mLoopWay + "");
-        mIsShuffle = sharedPreferences.getBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, false);
-
         setContentView(R.layout.activity_list);
+
+        readStatus();
 
         View barView = findViewById(R.id.bar);
         mBarTitle = (TextView) barView.findViewById(R.id.title);
@@ -467,10 +448,12 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                             shuffleAudioIndex(listOfAudioItemList.get(mPlayingIndex), mLastPlay);
                             mLastIndex = 0;
                         }
+                        saveStatus();
                         break;
                     case AudioPlayService.CHANGE_LOOP_EVENT:
                         mLoopWay = intent.getIntExtra(
                                 AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
+                        saveStatus();
                         break;
                 }
             }
@@ -496,16 +479,9 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        Log.d("loop", mLoopWay + " " + mIsShuffle);
+        super.onDestroy();
         stopService(new Intent(this, AudioPlayService.class));
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mEventReceiver);
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        //editor.clear();
-        editor.putInt(AudioPlayService.LOOP_WAY_INT, mLoopWay);
-        editor.putBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, mIsShuffle);
-        editor.apply();
-        super.onDestroy();
     }
 
     @Override
