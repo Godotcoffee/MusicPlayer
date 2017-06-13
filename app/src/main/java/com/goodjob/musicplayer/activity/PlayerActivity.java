@@ -85,7 +85,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             String title = bundle.getString(AudioPlayService.AUDIO_TITLE_STR);
             String artist = bundle.getString(AudioPlayService.AUDIO_ARTIST_STR);
             String path = bundle.getString(AudioPlayService.AUDIO_PATH_STR);
-            int albumId = bundle.getInt(AudioPlayService.AUDIO_ALBUM_ID_INT, -1);
 
             if (mTitle == null || !mTitle.equals(title)) {
                 mTitleTextView.setText(mTitle = title);

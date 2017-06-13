@@ -31,7 +31,6 @@
         <activity
             android:name=".activity.PlayerActivity"
             android:launchMode="singleTask" />
-        <activity android:name=".activity.TestActivity"></activity>
     </application>
 
 </manifest>

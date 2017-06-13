@@ -96,7 +96,6 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
     private void saveStatus() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        //editor.clear();
         editor.putInt(AudioPlayService.LOOP_WAY_INT, mLoopWay);
         editor.putBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, mIsShuffle);
         editor.apply();
@@ -105,7 +104,6 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
     private void readStatus() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         mLoopWay = sharedPreferences.getInt(AudioPlayService.LOOP_WAY_INT, AudioPlayService.LIST_NOT_LOOP);
-        Log.d("loopway", mLoopWay + "");
         mIsShuffle = sharedPreferences.getBoolean(AudioPlayService.LIST_SHUFFLE_BOOL, false);
     }
 
