@@ -213,7 +213,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
      */
     private void loadLyrics(String lyricsPath) {
         File file = new File(lyricsPath);
-        if (!file.exists()) {
+        /*if (!file.exists()) {
             // 造一个假文件
             file = new File(getCacheDir(), "default.lrc");
             if (!file.exists()) {
@@ -234,8 +234,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 }
 
             }
+        }*/
+        try {
+            mLyricView.setLyricFile(file);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        mLyricView.setLyricFile(file);
     }
 
     /**

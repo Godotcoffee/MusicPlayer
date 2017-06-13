@@ -28,7 +28,7 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
     compile 'com.github.andremion:musiccoverview:1.0.0'
-    compile 'com.github.zhengken:LyricViewDemo:v1.0'
+    compile 'com.github.zhengken:LyricViewDemo:v1.2'
     // https://mvnrepository.com/artifact/com.belerweb/pinyin4j
     compile group: 'com.belerweb', name: 'pinyin4j', version: '2.5.0'
 }
