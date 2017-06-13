@@ -99,10 +99,6 @@ public class AudioListAdapter extends BaseAdapter {
             viewHolder.classification.setText("");
             viewHolder.classification.setVisibility(View.GONE);
         }
-        Log.d("classc", audioItem.getClassficationId() + "");
-
-        //viewHolder.album.setTag(audio.getAlbumId());
-        //mAsyncBitmapLoader.load(viewHolder.album, audio.getAlbumId(), R.drawable.no_album);
 
         return convertView;
     }
