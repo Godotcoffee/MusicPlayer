@@ -323,6 +323,7 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+        viewPager.setOffscreenPageLimit(viewList.size() - 1);
         viewPager.setAdapter(new ViewPagerAdapter(titleList, viewList));
     }
 
