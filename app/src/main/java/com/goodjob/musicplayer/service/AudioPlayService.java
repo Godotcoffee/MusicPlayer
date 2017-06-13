@@ -281,16 +281,6 @@ public class AudioPlayService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        /**
-         * Intent所接收的格式
-         * key - type - expected - description - extra
-         * action String play 播放一首新的本地歌曲 path 歌曲的路径
-         *                                       title 歌曲的名称（用于状态栏显示）
-         *                                       artist 歌曲的演唱者（用于状态栏显示）
-         *                                       playNow 是否立刻播放
-         *               pause 如果有播放的歌曲，切换暂停和播放
-         *               stop 停止播放
-         */
         String action = intent.getStringExtra(ACTION_KEY);
         if (action == null) {
             return START_NOT_STICKY;

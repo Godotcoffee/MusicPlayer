@@ -65,7 +65,7 @@ public class VisualizerView extends View {
     }
 
     private static boolean indexRangeInFFT(List<Integer> fft, int pos) {
-        return (pos + 1) << 1 >= 0 && ((pos + 1) << 1 | 1) < fft.size();
+        return (pos + 1) << 1 > 0 && ((pos + 1) << 1 | 1) < fft.size();
     }
 
     private static double getSwingFromFFT(List<Integer> fft, int pos) {
