@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.media.audiofx.Equalizer;
@@ -16,6 +17,7 @@ import android.util.Log;
 
 import com.goodjob.musicplayer.R;
 import com.goodjob.musicplayer.activity.ListActivity;
+import com.goodjob.musicplayer.util.MediaUtils;
 
 import java.util.ArrayList;
 
@@ -322,9 +324,11 @@ public class AudioPlayService extends Service {
                 PendingIntent pendingIntent = PendingIntent.getService(
                         getApplicationContext(), 1, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
+                Bitmap bitmap = MediaUtils.getAlbumBitmapDrawable(mPath);
+
                 Notification notification = builder
                         .setSmallIcon(R.drawable.ic_player_notification)
-                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_player_big))
+                        .setLargeIcon(bitmap != null ? bitmap : BitmapFactory.decodeResource(getResources(), R.drawable.ic_player_big))
                         .setContentTitle(mAudioTitle)
                         .setContentText(mAudioArtist)
                         .setOngoing(true)
