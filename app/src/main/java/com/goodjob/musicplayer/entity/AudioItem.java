@@ -18,15 +18,15 @@ public class AudioItem {
         return mAudio;
     }
 
-    public void setClassficationId(int classificationId) {
+    public void setClassificationId(int classificationId) {
         mClassificationId = classificationId;
     }
 
-    public int getClassficationId() {
+    public int getClassificationId() {
         return mClassificationId;
     }
 
-    public void setClassficationName(String classificationName) {
+    public void setClassificationName(String classificationName) {
         mClassificationName = classificationName;
     }
 

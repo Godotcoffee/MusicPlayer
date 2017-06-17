@@ -19,7 +19,6 @@ import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -266,8 +265,8 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                     public AudioItem apply(Audio audio) {
                         AudioItem audioItem = new AudioItem(audio);
                         String title = getPinyinString(audio.getTitle()).toUpperCase();
-                        audioItem.setClassficationId(title.length() > 0 ? title.charAt(0) : -1);
-                        audioItem.setClassficationName(title.length() > 0 ? title.charAt(0) + "" : "");
+                        audioItem.setClassificationId(title.length() > 0 ? title.charAt(0) : -1);
+                        audioItem.setClassificationName(title.length() > 0 ? title.charAt(0) + "" : "");
                         return audioItem;
                     }
                 },
@@ -275,8 +274,8 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public AudioItem apply(Audio audio) {
                         AudioItem audioItem = new AudioItem(audio);
-                        audioItem.setClassficationId(audio.getArtistId());
-                        audioItem.setClassficationName(audio.getArtist());
+                        audioItem.setClassificationId(audio.getArtistId());
+                        audioItem.setClassificationName(audio.getArtist());
                         return audioItem;
                     }
                 },
@@ -284,8 +283,8 @@ public class ListActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public AudioItem apply(Audio audio) {
                         AudioItem audioItem = new AudioItem(audio);
-                        audioItem.setClassficationId(audio.getAlbumId());
-                        audioItem.setClassficationName(audio.getAlbum());
+                        audioItem.setClassificationId(audio.getAlbumId());
+                        audioItem.setClassificationName(audio.getAlbum());
                         return audioItem;
                     }
                 }
