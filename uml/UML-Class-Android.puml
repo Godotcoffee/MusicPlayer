@@ -1,0 +1,52 @@
+@startuml
+
+package com.goodjob.musicplayer.activity {
+    +class ListActivity {
+    }
+    +class PlayerActivity {
+    }
+}
+
+package com.goodjob.musicplayer.adapter {
+    +class AudioListAdapter {
+    }
+    +class ViewPagerAdapter {
+    }
+}
+
+package com.goodjob.musicplayer.service {
+    +class AudioPlayService {
+    }
+}
+
+package com.goodjob.musicplayer.view {
+    +class VisualizerView {
+    }
+}
+
+package com.goodjob.musicplayer.util {
+    +class MediaUtils {
+    }
+
+    +class AudioList {
+    }
+
+    +interface AudioToAudioItem {
+    }
+}
+
+ListActivity ...> AudioList
+ListActivity ...> MediaUtils
+ListActivity ...> AudioToAudioItem
+ListActivity .> ViewPagerAdapter
+ListActivity .> AudioListAdapter
+AudioPlayService <.... ListActivity
+PlayerActivity .> MediaUtils
+PlayerActivity ..> VisualizerView
+AudioPlayService <.... PlayerActivity
+PlayerActivity .> LyricView
+PlayerActivity .> MusicCoverView
+android.support.v4.content.LocalBroadcastManager <... ListActivity
+android.support.v4.content.LocalBroadcastManager <... PlayerActivity
+android.support.v4.content.LocalBroadcastManager <... AudioPlayService
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+actor Users as U
+participant Activity as A
+participant AudioPlayService as S
+participant LocalBroadCastManager as L
+
+activate A
+    A -> L : registerReceiver
+    activate L
+        L --> A : success
+    deactivate L
+deactivate A
+
+U -> A : Music Control
+
+activate A
+    A -> S : startService
+deactivate A
+
+activate S
+    S -> L : sendBroadcast
+deactivate S
+
+activate L
+    L -> A : onReceive
+deactivate L
+
+activate A
+    A --> U : Update UI
+deactivate A
+
+@enduml

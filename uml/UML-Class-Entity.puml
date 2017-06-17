@@ -1,0 +1,26 @@
+@startuml
+
+package com.goodjob.musicplayer.entity {
+    +class Audio {
+    }
+    +class AudioItem {
+        -Audio mAudio
+        -int mClassificationId
+        -String mClassificationName
+        +AudioItem(Audio audio)
+        +Audio getAudio()
+        +void setClassificationId(int classificationId)
+        +int getClassificationId()
+        +void setClassificationName(String classificationName)
+        +String getClassificationName()
+    }
+}
+
+Audio *-- AudioItem
+
+@enduml
+HOURS
+MINUTES
+}
+
+@enduml

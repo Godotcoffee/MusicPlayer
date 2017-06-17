@@ -1,0 +1,39 @@
+@startuml
+
+package com.goodjob.musicplayer.util {
+    +class MediaUtils {
+        +{static}List<Audio> getAudioList(Context context)
+        +{static}String getAlbumArt(Context context, int albumId)
+        +{static}Bitmap getAlbumBitmapDrawable(Audio audio)
+        +{static}Bitmap getAlbumBitmapDrawable(String path)
+    }
+
+    +class AudioList {
+        -{static}Object mLock
+        -{static}List<Audio> mAudioList
+        -AudioList()
+        +{static}List<Audio> getAudioList(Context context)
+        +{static}List<Audio> getAudioList(Context context, Comparator<? super Audio> cmp)
+    }
+
+    +interface AudioToAudioItem {
+        +AudioItem apply(Audio audio)
+    }
+}
+
+package com.goodjob.musicplayer.entity {
+    +class Audio {
+    }
+    +class AudioItem {
+    }
+}
+
+AudioList ..> MediaUtils
+AudioToAudioItem ...> Audio
+AudioToAudioItem ...> AudioItem
+AudioList ...> Audio
+AudioList ...> AudioItem
+MediaUtils ...> Audio
+MediaUtils ...> AudioItem
+
+@enduml
